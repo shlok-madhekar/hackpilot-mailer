@@ -311,10 +311,23 @@ export default function EmailBotDashboard() {
 
     const reader = new FileReader();
     reader.onload = () => {
+      const base64 = reader.result as string;
       setProspectusFile({
         name: file.name,
-        base64: reader.result as string,
+        base64,
       });
+
+      // Background upload to Supabase
+      fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileData: base64,
+          mimeType: file.type || "application/pdf",
+          usageCode: usageCode,
+        }),
+      }).catch((e) => console.error("Cloud backup failed", e));
     };
     reader.readAsDataURL(file);
   };
@@ -324,6 +337,22 @@ export default function EmailBotDashboard() {
     if (!file) return;
 
     if (file.name.endsWith(".csv")) {
+      // Background upload original CSV to Supabase
+      const reader = new FileReader();
+      reader.onload = () => {
+        fetch("/api/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileName: file.name,
+            fileData: reader.result as string,
+            mimeType: file.type || "text/csv",
+            usageCode: usageCode,
+          }),
+        }).catch((err) => console.error("Cloud backup failed", err));
+      };
+      reader.readAsDataURL(file);
+
       Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
