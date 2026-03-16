@@ -18,6 +18,8 @@ import {
   EyeOff,
   Plus,
   Trash2,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import Papa from "papaparse";
 
@@ -71,6 +73,34 @@ export default function EmailBotDashboard() {
     durationDays?: number;
   } | null>(null);
 
+  const [isMuted, setIsMuted] = useState(false);
+
+  const playSendSound = () => {
+    if (isMuted) return;
+    try {
+      // Small, subtle pop/click sound using Web Audio API
+      const ctx = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(880, ctx.currentTime); // High pitch (A5)
+      osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.1);
+
+      gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.1);
+    } catch (e) {
+      console.log("Audio not supported or blocked");
+    }
+  };
+
   const [isAdvancedMode, setIsAdvancedMode] = useState(false);
   const [accounts, setAccounts] = useState<EmailAccount[]>([
     { id: "1", name: "", email: "", pass: "" },
@@ -112,7 +142,31 @@ export default function EmailBotDashboard() {
 
     const savedAutoTemplates = localStorage.getItem("hp_auto_templates");
     if (savedAutoTemplates) setAutoTemplatesText(savedAutoTemplates);
+
+    const savedContacts = localStorage.getItem("hp_contacts");
+    if (savedContacts) {
+      try {
+        const parsed = JSON.parse(savedContacts);
+        if (parsed && parsed.length > 0) {
+          setContacts(parsed);
+          setCsvUploaded(true);
+        }
+      } catch (e) {}
+    }
+
+    const savedMuted = localStorage.getItem("hp_muted");
+    if (savedMuted === "true") setIsMuted(true);
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("hp_muted", isMuted.toString());
+  }, [isMuted]);
+
+  useEffect(() => {
+    if (csvUploaded && contacts.length > 0) {
+      localStorage.setItem("hp_contacts", JSON.stringify(contacts));
+    }
+  }, [contacts, csvUploaded]);
 
   useEffect(() => {
     if (!isAdvancedMode) {
@@ -317,9 +371,11 @@ export default function EmailBotDashboard() {
       .slice(0, 10); // Limit batch to 10
 
     if (!contactsToProcess.length) {
-      alert("All contacts have been processed!");
       setIsGenerating(false);
-      setStep(1);
+      if (drafts.length === 0) {
+        alert("All contacts have been processed!");
+        setStep(1);
+      }
       return;
     }
 
@@ -514,6 +570,7 @@ export default function EmailBotDashboard() {
           const data = await res.json();
           if (data.success) {
             finalStatus = "sent";
+            playSendSound();
             setDrafts((prev) =>
               prev.map((d) => (d.id === id ? { ...d, status: "sent" } : d)),
             );
@@ -581,48 +638,23 @@ export default function EmailBotDashboard() {
   }, [currentIndex, drafts.length, isGenerating, step, contacts]);
 
   const [autoSendEnabled, setAutoSendEnabled] = useState(false);
-  const [autoSendProgress, setAutoSendProgress] = useState(0);
-  const currentDraftRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    currentDraftRef.current = drafts[currentIndex]?.id || null;
-  }, [currentIndex, drafts]);
 
   const updateDraftStatusRef = useRef(updateDraftStatus);
   useEffect(() => {
     updateDraftStatusRef.current = updateDraftStatus;
   }, [updateDraftStatus]);
 
+  const currentDraftId = drafts[currentIndex]?.id;
+
   useEffect(() => {
-    let animationFrame: number;
-    let startTime: number;
-
-    const animate = (time: number) => {
-      if (!startTime) startTime = time;
-      const elapsed = time - startTime;
-      const progress = Math.min((elapsed / 5000) * 100, 100);
-      setAutoSendProgress(progress);
-
-      if (progress >= 100) {
-        if (currentDraftRef.current) {
-          updateDraftStatusRef.current(currentDraftRef.current, "approved");
-        }
-      } else {
-        animationFrame = requestAnimationFrame(animate);
-      }
-    };
-
-    if (autoSendEnabled && drafts.length > 0 && currentIndex < drafts.length) {
-      setAutoSendProgress(0);
-      animationFrame = requestAnimationFrame(animate);
-    } else {
-      setAutoSendProgress(0);
+    let timeout: NodeJS.Timeout;
+    if (autoSendEnabled && currentDraftId) {
+      timeout = setTimeout(() => {
+        updateDraftStatusRef.current(currentDraftId, "approved");
+      }, 5000);
     }
-
-    return () => {
-      if (animationFrame) cancelAnimationFrame(animationFrame);
-    };
-  }, [currentIndex, drafts.length, autoSendEnabled]);
+    return () => clearTimeout(timeout);
+  }, [currentDraftId, autoSendEnabled]);
 
   const regenerateDraft = async (id: string) => {
     const draft = drafts.find((d) => d.id === id);
@@ -829,6 +861,17 @@ export default function EmailBotDashboard() {
                   )}
                 </div>
               )}
+              <button
+                onClick={() => setIsMuted(!isMuted)}
+                className="text-gray-500 hover:text-black transition-colors"
+                title={isMuted ? "Unmute sounds" : "Mute sounds"}
+              >
+                {isMuted ? (
+                  <VolumeX className="w-5 h-5" />
+                ) : (
+                  <Volume2 className="w-5 h-5" />
+                )}
+              </button>
             </div>
           </div>
 
@@ -1282,10 +1325,13 @@ export default function EmailBotDashboard() {
                       className={`w-full bg-white border border-black p-8 flex flex-col relative overflow-hidden transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
                     >
                       {autoSendEnabled && (
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gray-200">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gray-200 z-50">
                           <div
-                            className="h-full bg-black transition-all duration-75 ease-linear"
-                            style={{ width: `${autoSendProgress}%` }}
+                            key={`progress-${drafts[currentIndex].id}`}
+                            className="h-full bg-black"
+                            style={{
+                              animation: "progress 5s linear forwards",
+                            }}
                           />
                         </div>
                       )}
@@ -1381,8 +1427,8 @@ export default function EmailBotDashboard() {
                         You're all caught up!
                       </h3>
                       <p className="text-gray-600 mb-8 max-w-md">
-                        You've reviewed all {drafts.length} generated emails.
-                        Check your sent folder for the approved ones.
+                        You've reviewed all contacts in your list. Check your
+                        sent folder for the approved ones.
                       </p>
                       <div className="flex items-center gap-4">
                         <button
@@ -1423,6 +1469,10 @@ export default function EmailBotDashboard() {
       <style
         dangerouslySetInnerHTML={{
           __html: `
+        @keyframes progress {
+          from { width: 0%; }
+          to { width: 100%; }
+        }
         .custom-scrollbar::-webkit-scrollbar {
           width: 8px;
         }
