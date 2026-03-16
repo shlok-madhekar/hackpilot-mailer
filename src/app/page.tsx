@@ -59,6 +59,7 @@ export default function EmailBotDashboard() {
   const [gmailUser, setGmailUser] = useState("");
   const [gmailPass, setGmailPass] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [ccEmail, setCcEmail] = useState("");
   const [usageCode, setUsageCode] = useState("");
   const [showUsageCode, setShowUsageCode] = useState(false);
   const [quota, setQuota] = useState<{
@@ -102,6 +103,9 @@ export default function EmailBotDashboard() {
 
     const savedCode = localStorage.getItem("hp_code");
     if (savedCode) setUsageCode(savedCode);
+
+    const savedCc = localStorage.getItem("hp_cc");
+    if (savedCc) setCcEmail(savedCc);
 
     const savedTemplate = localStorage.getItem("hp_template");
     if (savedTemplate) setTemplate(savedTemplate);
@@ -158,6 +162,10 @@ export default function EmailBotDashboard() {
       prev.map((a) => (a.id === id ? { ...a, [field]: value } : a)),
     );
   };
+
+  useEffect(() => {
+    localStorage.setItem("hp_cc", ccEmail);
+  }, [ccEmail]);
 
   useEffect(() => {
     localStorage.setItem("hp_code", usageCode);
@@ -484,6 +492,7 @@ export default function EmailBotDashboard() {
               senderName: sender.name,
               usageCode,
               to: draft.contact.email,
+              cc: ccEmail || undefined,
               subject: draft.subject,
               text: draft.body,
               ...(sendProspectus && prospectusFile
@@ -835,6 +844,25 @@ export default function EmailBotDashboard() {
                       >
                         {isAdvancedMode ? "Basic Mode" : "Advanced Mode"}
                       </button>
+                    </div>
+
+                    <div>
+                      <label className="text-xs text-gray-500 mb-1.5 block uppercase tracking-wider font-bold">
+                        CC Email (Optional)
+                      </label>
+                      <div className="relative">
+                        <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                          type="email"
+                          value={ccEmail}
+                          onChange={(e) => setCcEmail(e.target.value)}
+                          className="w-full bg-white border border-black py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-black transition-all"
+                          placeholder="team@myhackathon.com"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1.5">
+                        Send a copy of every approved email here for tracking.
+                      </p>
                     </div>
 
                     {!isAdvancedMode ? (

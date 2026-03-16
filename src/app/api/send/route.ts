@@ -10,6 +10,7 @@ export async function POST(req: Request) {
       gmailPass,
       senderName,
       to,
+      cc,
       subject,
       text,
       usageCode,
@@ -43,6 +44,7 @@ export async function POST(req: Request) {
     const mailOptions: any = {
       from: senderName ? `"${senderName}" <${gmailUser}>` : gmailUser,
       to,
+      cc,
       subject,
       text,
     };
