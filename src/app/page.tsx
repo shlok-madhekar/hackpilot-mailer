@@ -990,21 +990,21 @@ export default function EmailBotDashboard() {
   // --- UI Components ---
   return (
     <div className={isDarkMode ? "dark" : ""}>
-      <div className="min-h-screen bg-[#fdfbf7] dark:bg-zinc-950 text-black dark:text-zinc-100 font-mono selection:bg-gray-200 dark:selection:bg-zinc-800 overflow-y-auto relative">
+      <div className="min-h-screen bg-[#fdfbf7] dark:bg-zinc-950 text-black dark:text-zinc-100 font-sans selection:bg-gray-200 dark:selection:bg-zinc-800 overflow-y-auto relative">
         <main className="relative z-10 max-w-6xl mx-auto px-6 py-12">
           {/* Header */}
           <header className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 border-b border-black dark:border-zinc-700 pb-4 gap-4">
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold tracking-tight uppercase">
+                <h1 className="text-3xl font-bold tracking-tight uppercase font-mono">
                   hackpilot
                 </h1>
-                <span className="bg-black text-white dark:bg-zinc-100 dark:text-zinc-900 text-xs font-bold px-2 py-1 uppercase tracking-wider">
+                <span className="bg-black text-white dark:bg-zinc-100 dark:text-zinc-900 text-xs font-bold px-2 py-1 uppercase tracking-wider font-mono">
                   Beta
                 </span>
               </div>
               <div className="flex items-center gap-3 mt-1">
-                <p className="text-gray-500 dark:text-zinc-400 text-sm lowercase font-bold">
+                <p className="text-gray-500 dark:text-zinc-400 text-sm lowercase font-bold font-mono">
                   organizer
                 </p>
                 {quota && (
@@ -1038,6 +1038,11 @@ export default function EmailBotDashboard() {
                     )}
                   </div>
                 )}
+              </div>
+            </div>
+
+            <div className="flex flex-col items-end gap-3">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => setIsMuted(!isMuted)}
                   className="text-gray-500 dark:text-zinc-400 hover:text-black dark:hover:text-zinc-100 transition-colors"
@@ -1061,24 +1066,23 @@ export default function EmailBotDashboard() {
                   )}
                 </button>
               </div>
-            </div>
-
-            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-zinc-400 border border-black dark:border-zinc-700 px-4 py-2 bg-white dark:bg-zinc-900 w-fit">
-              <span
-                className={
-                  step === 1 ? "text-black dark:text-zinc-100 font-bold" : ""
-                }
-              >
-                1. Configure
-              </span>
-              <ChevronRight className="w-4 h-4" />
-              <span
-                className={
-                  step === 2 ? "text-black dark:text-zinc-100 font-bold" : ""
-                }
-              >
-                2. Review & Send
-              </span>
+              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-zinc-400 border border-black dark:border-zinc-700 px-4 py-2 bg-white dark:bg-zinc-900 w-fit font-mono">
+                <span
+                  className={
+                    step === 1 ? "text-black dark:text-zinc-100 font-bold" : ""
+                  }
+                >
+                  1. Configure
+                </span>
+                <ChevronRight className="w-4 h-4" />
+                <span
+                  className={
+                    step === 2 ? "text-black dark:text-zinc-100 font-bold" : ""
+                  }
+                >
+                  2. Review & Send
+                </span>
+              </div>
             </div>
           </header>
 
@@ -1103,7 +1107,7 @@ export default function EmailBotDashboard() {
 
                     <div className="space-y-4">
                       <div>
-                        <label className="flex items-center justify-between text-xs text-gray-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider font-bold">
+                        <label className="flex items-center justify-between text-xs text-gray-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider font-mono font-bold">
                           <span>Hackpilot Usage Code</span>
                           <a
                             href="mailto:shlokmadhekar88@gmail.com?subject=Hackpilot%20Usage%20Code%20Request&body=Hi%20Shlok%2C%0A%0AI%20would%20like%20to%20request%20a%20Hackpilot%20usage%20code.%0A%0AHackathon%20Name%3A%20%5BYour%20Hackathon%5D%0ADate%3A%20%5BDate%5D%0AExpected%20Attendees%3A%20%5BNumber%5D%0A%0AThanks%21"
@@ -1135,7 +1139,7 @@ export default function EmailBotDashboard() {
                       </div>
 
                       <div>
-                        <label className="text-xs text-gray-500 dark:text-zinc-400 mb-1.5 block uppercase tracking-wider font-bold">
+                        <label className="text-xs text-gray-500 dark:text-zinc-400 mb-1.5 block uppercase tracking-wider font-mono font-bold">
                           Gmail Address
                         </label>
                         <div className="relative">
@@ -1163,7 +1167,7 @@ export default function EmailBotDashboard() {
                       </div>
 
                       <div>
-                        <label className="text-xs text-gray-500 dark:text-zinc-400 mb-1.5 block uppercase tracking-wider font-bold">
+                        <label className="text-xs text-gray-500 dark:text-zinc-400 mb-1.5 block uppercase tracking-wider font-mono font-bold">
                           CC Email (Optional)
                         </label>
                         <div className="relative">
@@ -1184,7 +1188,7 @@ export default function EmailBotDashboard() {
                       {!isAdvancedMode ? (
                         <>
                           <div>
-                            <label className="text-xs text-gray-500 dark:text-zinc-400 mb-1.5 block uppercase tracking-wider font-bold">
+                            <label className="text-xs text-gray-500 dark:text-zinc-400 mb-1.5 block uppercase tracking-wider font-mono font-bold">
                               Gmail Address
                             </label>
                             <div className="relative">
@@ -1200,7 +1204,7 @@ export default function EmailBotDashboard() {
                           </div>
 
                           <div>
-                            <label className="flex items-center justify-between text-xs text-gray-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider font-bold">
+                            <label className="flex items-center justify-between text-xs text-gray-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider font-mono font-bold">
                               <span>App Password</span>
                               <a
                                 href="https://myaccount.google.com/apppasswords"
@@ -1658,7 +1662,7 @@ export default function EmailBotDashboard() {
                         </div>
 
                         <div className="mb-6">
-                          <div className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400 mb-1">
+                          <div className="text-xs font-bold uppercase tracking-wider font-mono text-gray-500 dark:text-zinc-400 mb-1">
                             To
                           </div>
                           <div className="font-bold text-black dark:text-zinc-100 text-lg">
@@ -1671,7 +1675,7 @@ export default function EmailBotDashboard() {
 
                         {isAdvancedMode && accounts.length > 0 && (
                           <div className="mb-6 border-b border-gray-200 dark:border-zinc-800 pb-4">
-                            <div className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400 mb-1">
+                            <div className="text-xs font-bold uppercase tracking-wider font-mono text-gray-500 dark:text-zinc-400 mb-1">
                               Sending From
                             </div>
                             <div className="font-bold text-black dark:text-zinc-100 text-sm">
@@ -1690,7 +1694,7 @@ export default function EmailBotDashboard() {
                         )}
 
                         <div className="mb-6">
-                          <div className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400 mb-1">
+                          <div className="text-xs font-bold uppercase tracking-wider font-mono text-gray-500 dark:text-zinc-400 mb-1">
                             Subject
                           </div>
                           <div className="text-md font-bold text-black dark:text-zinc-100 border-b border-gray-200 dark:border-zinc-800 pb-2 font-sans">
@@ -1764,8 +1768,8 @@ export default function EmailBotDashboard() {
                           You&apos;re all caught up!
                         </h3>
                         <p className="text-gray-600 dark:text-zinc-300 mb-8 max-w-md">
-                          You&apos;ve reviewed all contacts in your list. Check your
-                          sent folder for the approved ones.
+                          You&apos;ve reviewed all contacts in your list. Check
+                          your sent folder for the approved ones.
                         </p>
                         <div className="flex items-center gap-4">
                           <button
