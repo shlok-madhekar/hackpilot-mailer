@@ -645,15 +645,37 @@ export default function EmailBotDashboard() {
   }, [updateDraftStatus]);
 
   const currentDraftId = drafts[currentIndex]?.id;
+  const [autoSendProgress, setAutoSendProgress] = useState(0);
 
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
+    let animationFrame: number;
+    let startTime: number;
+
+    const animate = (time: number) => {
+      if (!startTime) startTime = time;
+      const elapsed = time - startTime;
+      const progress = Math.min((elapsed / 5000) * 100, 100);
+      setAutoSendProgress(progress);
+
+      if (progress >= 100) {
+        if (currentDraftId) {
+          updateDraftStatusRef.current(currentDraftId, "approved");
+        }
+      } else {
+        animationFrame = requestAnimationFrame(animate);
+      }
+    };
+
     if (autoSendEnabled && currentDraftId) {
-      timeout = setTimeout(() => {
-        updateDraftStatusRef.current(currentDraftId, "approved");
-      }, 5000);
+      setAutoSendProgress(0);
+      animationFrame = requestAnimationFrame(animate);
+    } else {
+      setAutoSendProgress(0);
     }
-    return () => clearTimeout(timeout);
+
+    return () => {
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+    };
   }, [currentDraftId, autoSendEnabled]);
 
   const regenerateDraft = async (id: string) => {
@@ -1327,11 +1349,8 @@ export default function EmailBotDashboard() {
                       {autoSendEnabled && (
                         <div className="absolute top-0 left-0 w-full h-1 bg-gray-200 z-50">
                           <div
-                            key={`progress-${drafts[currentIndex].id}`}
-                            className="h-full bg-black"
-                            style={{
-                              animation: "progress 5s linear forwards",
-                            }}
+                            className="h-full bg-black transition-all duration-75 ease-linear"
+                            style={{ width: `${autoSendProgress}%` }}
                           />
                         </div>
                       )}
@@ -1469,10 +1488,6 @@ export default function EmailBotDashboard() {
       <style
         dangerouslySetInnerHTML={{
           __html: `
-        @keyframes progress {
-          from { width: 0%; }
-          to { width: 100%; }
-        }
         .custom-scrollbar::-webkit-scrollbar {
           width: 8px;
         }
