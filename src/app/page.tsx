@@ -74,6 +74,7 @@ export default function EmailBotDashboard() {
   } | null>(null);
 
   const [isMuted, setIsMuted] = useState(false);
+  const [autoSendDelay, setAutoSendDelay] = useState(8);
 
   const playSendSound = () => {
     if (isMuted) return;
@@ -166,6 +167,9 @@ export default function EmailBotDashboard() {
     const savedAutoTemplates = localStorage.getItem("hp_auto_templates");
     if (savedAutoTemplates) setAutoTemplatesText(savedAutoTemplates);
 
+    const savedDelay = localStorage.getItem("hp_auto_delay");
+    if (savedDelay) setAutoSendDelay(parseInt(savedDelay, 10));
+
     const savedContacts = localStorage.getItem("hp_contacts");
     if (savedContacts) {
       try {
@@ -184,6 +188,10 @@ export default function EmailBotDashboard() {
   useEffect(() => {
     localStorage.setItem("hp_muted", isMuted.toString());
   }, [isMuted]);
+
+  useEffect(() => {
+    localStorage.setItem("hp_auto_delay", autoSendDelay.toString());
+  }, [autoSendDelay]);
 
   useEffect(() => {
     if (csvUploaded && contacts.length > 0) {
@@ -645,30 +653,30 @@ export default function EmailBotDashboard() {
   }, [updateDraftStatus]);
 
   const currentDraftId = drafts[currentIndex]?.id;
-  const [autoSendCountdown, setAutoSendCountdown] = useState(5);
+  const [autoSendCountdown, setAutoSendCountdown] = useState(autoSendDelay);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
 
     if (autoSendEnabled && currentDraftId) {
-      setAutoSendCountdown(5);
+      setAutoSendCountdown(autoSendDelay);
       interval = setInterval(() => {
         setAutoSendCountdown((prev) => {
           if (prev <= 1) {
             updateDraftStatusRef.current(currentDraftId, "approved");
-            return 5;
+            return autoSendDelay;
           }
           return prev - 1;
         });
       }, 1000);
     } else {
-      setAutoSendCountdown(5);
+      setAutoSendCountdown(autoSendDelay);
     }
 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [currentDraftId, autoSendEnabled]);
+  }, [currentDraftId, autoSendEnabled, autoSendDelay]);
 
   const regenerateDraft = async (id: string) => {
     const draft = drafts.find((d) => d.id === id);
@@ -1302,28 +1310,53 @@ export default function EmailBotDashboard() {
                     Approve the AI-generated drafts before sending.
                   </p>
                 </div>
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 text-sm font-bold uppercase text-black cursor-pointer bg-gray-100 hover:bg-gray-200 px-3 py-2 border border-black transition-colors select-none">
-                    <input
-                      type="checkbox"
-                      checked={autoSendEnabled}
-                      onChange={(e) => setAutoSendEnabled(e.target.checked)}
-                      className="w-4 h-4 border-black border-2 rounded-none accent-black"
-                    />
-                    Auto-Send (5s)
-                  </label>
-                  <button
-                    onClick={downloadCSV}
-                    className="text-sm text-black hover:bg-gray-100 transition-colors flex items-center gap-2 bg-white border border-black px-4 py-2 font-bold uppercase"
-                  >
-                    <FileText className="w-4 h-4" /> Save Progress
-                  </button>
-                  <button
-                    onClick={stopGenerationAndGoBack}
-                    className="text-sm text-black hover:bg-gray-100 transition-colors flex items-center gap-2 border border-black px-4 py-2 font-bold uppercase"
-                  >
-                    <Settings2 className="w-4 h-4" /> Back & Stop
-                  </button>
+                <div className="flex flex-col items-end gap-2">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 bg-gray-100 border border-black px-3 py-1.5">
+                      <label className="flex items-center gap-2 text-sm font-bold uppercase text-black cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={autoSendEnabled}
+                          onChange={(e) => setAutoSendEnabled(e.target.checked)}
+                          className="w-4 h-4 border-black border-2 rounded-none accent-black"
+                        />
+                        Auto-Send
+                      </label>
+                      <div className="w-px h-4 bg-gray-400 mx-1"></div>
+                      <input
+                        type="number"
+                        min="1"
+                        max="60"
+                        value={autoSendDelay}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value, 10);
+                          if (!isNaN(val) && val > 0) setAutoSendDelay(val);
+                        }}
+                        disabled={autoSendEnabled}
+                        className="w-12 bg-white border border-black text-center text-sm font-bold py-1 focus:outline-none focus:ring-1 focus:ring-black disabled:opacity-50"
+                      />
+                      <span className="text-xs font-bold uppercase text-gray-500">
+                        sec
+                      </span>
+                    </div>
+                    <button
+                      onClick={downloadCSV}
+                      className="text-sm text-black hover:bg-gray-100 transition-colors flex items-center gap-2 bg-white border border-black px-4 py-2 font-bold uppercase"
+                    >
+                      <FileText className="w-4 h-4" /> Save Progress
+                    </button>
+                    <button
+                      onClick={stopGenerationAndGoBack}
+                      className="text-sm text-black hover:bg-gray-100 transition-colors flex items-center gap-2 border border-black px-4 py-2 font-bold uppercase h-full"
+                    >
+                      <Settings2 className="w-4 h-4" /> Back & Stop
+                    </button>
+                  </div>
+                  {autoSendDelay < 5 && (
+                    <span className="text-xs font-bold text-red-600 uppercase">
+                      ⚠️ Warning: Under 5s increases risk of spam blocking
+                    </span>
+                  )}
                 </div>
               </div>
 
