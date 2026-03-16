@@ -48,6 +48,7 @@ interface EmailDraft {
 
 const PREDEFINED_TEMPLATES = [
   {
+    id: "t-1",
     name: "Example Template: General Tech",
     content:
       "SUBJECT: [Hackathon Name] Partnership - [Company Name]\n\nHi [Contact Name],\n\nI’m [Your Name], an organizer for [Hackathon Name], an upcoming hackathon happening on [Date] at [Location/Online].\n\nI saw [Company Name]’s recent [Use Perplexity: specific update/launch] and thought it was incredibly innovative. We believe our attendees would build amazing things with your technology.\n\nWe are currently seeking sponsors to help make this event a reality for our participants. Sponsoring us is a fantastic way to introduce your tools to passionate builders.\n\nWould you be open to a brief chat next week about potential collaboration?\n\nThanks,\n[Your Name]\nOrganizer, [Hackathon Name]\n[Link to website]",
@@ -227,16 +228,20 @@ export default function EmailBotDashboard() {
     const savedCode = localStorage.getItem("hp_code");
     if (savedCode) setUsageCode(savedCode);
 
-    const savedCc = localStorage.getItem("hp_cc");
+    const savedCc = localStorage.getItem("hp_ccEmail");
     if (savedCc) setCcEmail(savedCc);
 
-    const savedTemplate = localStorage.getItem("hp_template");
-    if (savedTemplate) setTemplate(savedTemplate);
+    const savedTemplates = localStorage.getItem("hp_templates");
+    if (savedTemplates) {
+      try {
+        setTemplates(JSON.parse(savedTemplates));
+      } catch (e) {}
+    }
 
-    const savedAutoTemplates = localStorage.getItem("hp_auto_templates");
-    if (savedAutoTemplates) setAutoTemplatesText(savedAutoTemplates);
+    const savedSelected = localStorage.getItem("hp_selected_template");
+    if (savedSelected) setSelectedTemplateId(savedSelected);
 
-    const savedDelay = localStorage.getItem("hp_auto_delay");
+    const savedDelay = localStorage.getItem("hp_autoSendDelay");
     if (savedDelay) setAutoSendDelay(parseInt(savedDelay, 10));
 
     const savedContacts = localStorage.getItem("hp_contacts");
@@ -345,20 +350,27 @@ export default function EmailBotDashboard() {
       setQuota(null);
     }
   }, [usageCode]);
-  const [template, setTemplate] = useState(PREDEFINED_TEMPLATES[0].content);
-  const [autoTemplatesText, setAutoTemplatesText] = useState(
-    PREDEFINED_TEMPLATES.map((t) => `--- ${t.name} ---\n${t.content}`).join(
-      "\n\n",
-    ),
-  );
+  const [templates, setTemplates] =
+    useState<{ id: string; name: string; content: string }[]>(
+      PREDEFINED_TEMPLATES,
+    );
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("AUTO");
+
+  const template =
+    selectedTemplateId === "AUTO"
+      ? "AUTO"
+      : templates.find((t) => t.id === selectedTemplateId)?.content || "";
+  const autoTemplatesText = templates
+    .map((t) => `--- ${t.name} ---\n${t.content}`)
+    .join("\n\n");
 
   useEffect(() => {
-    localStorage.setItem("hp_template", template);
-  }, [template]);
+    localStorage.setItem("hp_templates", JSON.stringify(templates));
+  }, [templates]);
 
   useEffect(() => {
-    localStorage.setItem("hp_auto_templates", autoTemplatesText);
-  }, [autoTemplatesText]);
+    localStorage.setItem("hp_selected_template", selectedTemplateId);
+  }, [selectedTemplateId]);
 
   const [sendProspectus, setSendProspectus] = useState(false);
   const [prospectusFile, setProspectusFile] = useState<{
@@ -1314,34 +1326,34 @@ export default function EmailBotDashboard() {
                         Campaign Template
                       </h2>
                     </div>
-                    <select
-                      className="bg-white border border-black px-3 py-1.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-black"
-                      onChange={(e) => {
-                        if (e.target.value === "AUTO") {
-                          setTemplate("AUTO");
-                        } else if (e.target.value !== "CUSTOM") {
-                          const selected = PREDEFINED_TEMPLATES.find(
-                            (t) => t.name === e.target.value,
-                          );
-                          if (selected) setTemplate(selected.content);
-                        }
-                      }}
-                      value={
-                        template === "AUTO"
-                          ? "AUTO"
-                          : PREDEFINED_TEMPLATES.find(
-                              (t) => t.content === template,
-                            )?.name || "CUSTOM"
-                      }
-                    >
-                      <option value="AUTO">✨ Auto-select via AI</option>
-                      {PREDEFINED_TEMPLATES.map((t, i) => (
-                        <option key={i} value={t.name}>
-                          {t.name}
-                        </option>
-                      ))}
-                      <option value="CUSTOM">✏️ Custom</option>
-                    </select>
+                    <div className="flex items-center gap-2">
+                      <select
+                        className="bg-white border border-black px-3 py-1.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-black font-bold"
+                        onChange={(e) => setSelectedTemplateId(e.target.value)}
+                        value={selectedTemplateId}
+                      >
+                        <option value="AUTO">✨ Auto-select via AI</option>
+                        {templates.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.name}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => {
+                          const newId = "t-" + Date.now();
+                          setTemplates([
+                            ...templates,
+                            { id: newId, name: "New Template", content: "" },
+                          ]);
+                          setSelectedTemplateId(newId);
+                        }}
+                        className="bg-black text-white p-1.5 border border-black hover:bg-gray-800 transition-colors"
+                        title="Add New Template"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="mb-4 bg-yellow-50 border border-yellow-400 p-3 text-xs text-yellow-800 font-bold uppercase flex items-start gap-2 shadow-[2px_2px_0px_0px_rgba(250,204,21,1)]">
@@ -1353,20 +1365,113 @@ export default function EmailBotDashboard() {
                     </p>
                   </div>
 
-                  <textarea
-                    value={template === "AUTO" ? autoTemplatesText : template}
-                    onChange={(e) => {
-                      if (template === "AUTO")
-                        setAutoTemplatesText(e.target.value);
-                      else setTemplate(e.target.value);
-                    }}
-                    className="flex-1 w-full bg-white border border-black p-4 text-sm text-black focus:outline-none focus:ring-2 focus:ring-black transition-all resize-none min-h-[300px] leading-relaxed font-sans"
-                    placeholder={
-                      template === "AUTO"
-                        ? "Define your custom templates here..."
-                        : "Write your base template here."
-                    }
-                  />
+                  {selectedTemplateId === "AUTO" ? (
+                    <div className="flex-1 flex flex-col gap-4 overflow-y-auto min-h-[300px]">
+                      <div className="bg-blue-50 border border-blue-400 p-3 text-xs text-blue-800 font-bold uppercase shadow-[2px_2px_0px_0px_rgba(59,130,246,1)]">
+                        AI will automatically choose the best template for each
+                        contact based on their details.
+                      </div>
+                      {templates.map((t, idx) => (
+                        <div
+                          key={t.id}
+                          className="border border-black bg-gray-50 p-4 relative group flex flex-col gap-2"
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <input
+                              type="text"
+                              value={t.name}
+                              onChange={(e) => {
+                                const newTemplates = [...templates];
+                                newTemplates[idx].name = e.target.value;
+                                setTemplates(newTemplates);
+                              }}
+                              className="font-bold uppercase bg-transparent border-b border-black focus:outline-none w-full text-black"
+                              placeholder="Template Name"
+                            />
+                            {templates.length > 1 && (
+                              <button
+                                onClick={() => {
+                                  setTemplates(
+                                    templates.filter(
+                                      (temp) => temp.id !== t.id,
+                                    ),
+                                  );
+                                }}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                          <textarea
+                            value={t.content}
+                            onChange={(e) => {
+                              const newTemplates = [...templates];
+                              newTemplates[idx].content = e.target.value;
+                              setTemplates(newTemplates);
+                            }}
+                            className="w-full bg-white border border-gray-300 p-2 text-sm text-black focus:outline-none focus:ring-1 focus:ring-black resize-y min-h-[100px]"
+                            placeholder="Write your base template here."
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex-1 flex flex-col gap-4 min-h-[300px]">
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="text"
+                          value={
+                            templates.find((t) => t.id === selectedTemplateId)
+                              ?.name || ""
+                          }
+                          onChange={(e) => {
+                            setTemplates(
+                              templates.map((t) =>
+                                t.id === selectedTemplateId
+                                  ? { ...t, name: e.target.value }
+                                  : t,
+                              ),
+                            );
+                          }}
+                          className="font-bold uppercase text-lg bg-transparent border-b-2 border-black focus:outline-none flex-1 text-black"
+                          placeholder="Template Name"
+                        />
+                        {templates.length > 1 && (
+                          <button
+                            onClick={() => {
+                              setTemplates(
+                                templates.filter(
+                                  (t) => t.id !== selectedTemplateId,
+                                ),
+                              );
+                              setSelectedTemplateId("AUTO");
+                            }}
+                            className="text-red-500 hover:text-red-700 font-bold uppercase text-xs flex items-center gap-1 border border-red-500 px-2 py-1"
+                          >
+                            <Trash2 className="w-4 h-4" /> Delete
+                          </button>
+                        )}
+                      </div>
+                      <textarea
+                        value={
+                          templates.find((t) => t.id === selectedTemplateId)
+                            ?.content || ""
+                        }
+                        onChange={(e) => {
+                          setTemplates(
+                            templates.map((t) =>
+                              t.id === selectedTemplateId
+                                ? { ...t, content: e.target.value }
+                                : t,
+                            ),
+                          );
+                        }}
+                        className="flex-1 w-full bg-white border border-black p-4 text-sm text-black focus:outline-none focus:ring-2 focus:ring-black transition-all resize-none leading-relaxed font-sans"
+                        placeholder="Write your base template here."
+                      />
+                    </div>
+                  )}
 
                   <div className="mt-4 flex flex-col gap-3 border-t border-gray-200 pt-4">
                     <label className="flex items-center gap-2 text-sm font-bold uppercase text-black cursor-pointer w-fit">
