@@ -645,36 +645,28 @@ export default function EmailBotDashboard() {
   }, [updateDraftStatus]);
 
   const currentDraftId = drafts[currentIndex]?.id;
-  const [autoSendProgress, setAutoSendProgress] = useState(0);
+  const [autoSendCountdown, setAutoSendCountdown] = useState(5);
 
   useEffect(() => {
-    let animationFrame: number;
-    let startTime: number;
-
-    const animate = (time: number) => {
-      if (!startTime) startTime = time;
-      const elapsed = time - startTime;
-      const progress = Math.min((elapsed / 5000) * 100, 100);
-      setAutoSendProgress(progress);
-
-      if (progress >= 100) {
-        if (currentDraftId) {
-          updateDraftStatusRef.current(currentDraftId, "approved");
-        }
-      } else {
-        animationFrame = requestAnimationFrame(animate);
-      }
-    };
+    let interval: ReturnType<typeof setInterval>;
 
     if (autoSendEnabled && currentDraftId) {
-      setAutoSendProgress(0);
-      animationFrame = requestAnimationFrame(animate);
+      setAutoSendCountdown(5);
+      interval = setInterval(() => {
+        setAutoSendCountdown((prev) => {
+          if (prev <= 1) {
+            updateDraftStatusRef.current(currentDraftId, "approved");
+            return 5;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     } else {
-      setAutoSendProgress(0);
+      setAutoSendCountdown(5);
     }
 
     return () => {
-      if (animationFrame) cancelAnimationFrame(animationFrame);
+      if (interval) clearInterval(interval);
     };
   }, [currentDraftId, autoSendEnabled]);
 
@@ -1346,17 +1338,17 @@ export default function EmailBotDashboard() {
                       transition={{ type: "spring", bounce: 0.3 }}
                       className={`w-full bg-white border border-black p-8 flex flex-col relative overflow-hidden transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
                     >
-                      {autoSendEnabled && (
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gray-200 z-50">
-                          <div
-                            className="h-full bg-black transition-all duration-75 ease-linear"
-                            style={{ width: `${autoSendProgress}%` }}
-                          />
+                      <div className="absolute top-0 right-0 flex items-center bg-white z-10">
+                        {autoSendEnabled && (
+                          <div className="px-4 py-3 text-xs font-bold text-black border-l border-b border-black bg-yellow-300 flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-black animate-pulse" />
+                            Auto-Sending in {autoSendCountdown}s
+                          </div>
+                        )}
+                        <div className="p-4 text-xs font-bold text-gray-500 border-l border-b border-black">
+                          {currentIndex + 1} / {drafts.length}{" "}
+                          {isGenerating ? "(Generating...)" : ""}
                         </div>
-                      )}
-                      <div className="absolute top-0 right-0 p-4 text-xs font-bold text-gray-500 border-l border-b border-black bg-white z-10">
-                        {currentIndex + 1} / {drafts.length}{" "}
-                        {isGenerating ? "(Generating...)" : ""}
                       </div>
 
                       <div className="mb-6">
