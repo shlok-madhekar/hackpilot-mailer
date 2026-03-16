@@ -1013,8 +1013,8 @@ export default function EmailBotDashboard() {
                       className={`text-xs font-bold uppercase px-2 py-0.5 border border-black dark:border-zinc-700 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
                         quota.isUnlimited ||
                         quota.usageToday < quota.limitPerDay
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
+                          ? "bg-green-100 dark:bg-green-950 dark:text-green-400 text-green-800"
+                          : "bg-red-100 dark:bg-red-950 dark:text-red-400 text-red-800"
                       }`}
                     >
                       Quota:{" "}
@@ -1023,7 +1023,7 @@ export default function EmailBotDashboard() {
                         : `${quota.usageToday} / ${quota.limitPerDay}`}
                     </span>
                     {!quota.isUnlimited && (
-                      <span className="text-xs font-bold uppercase px-2 py-0.5 border border-black dark:border-zinc-700 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-blue-100 text-blue-800">
+                      <span className="text-xs font-bold uppercase px-2 py-0.5 border border-black dark:border-zinc-700 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-blue-100 dark:bg-blue-950 dark:text-blue-400 text-blue-800">
                         {quota.expiresAt
                           ? `Expires in ${Math.max(
                               0,
@@ -1399,7 +1399,7 @@ export default function EmailBotDashboard() {
                       </div>
                     </div>
 
-                    <div className="mb-4 bg-yellow-50 border border-yellow-400 p-3 text-xs text-yellow-800 font-bold uppercase flex items-start gap-2 shadow-[2px_2px_0px_0px_rgba(250,204,21,1)]">
+                    <div className="mb-4 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-400 dark:border-yellow-700/50 p-3 text-xs text-yellow-800 dark:text-yellow-500 font-bold uppercase flex items-start gap-2 shadow-[2px_2px_0px_0px_rgba(250,204,21,1)]">
                       <span className="text-base leading-none">⚠️</span>
                       <p>
                         Important: You must manually replace [Hackathon Name],
@@ -1650,7 +1650,7 @@ export default function EmailBotDashboard() {
                       >
                         <div className="absolute top-0 right-0 flex items-center bg-white dark:bg-zinc-900 z-10">
                           {autoSendEnabled && (
-                            <div className="px-4 py-3 text-xs font-bold text-black dark:text-zinc-100 border-l border-b border-black dark:border-zinc-700 bg-yellow-300 flex items-center gap-2">
+                            <div className="px-4 py-3 text-xs font-bold text-black dark:text-zinc-100 border-l border-b border-black dark:border-zinc-700 bg-yellow-300 dark:bg-yellow-600 flex items-center gap-2">
                               <div className="w-2 h-2 rounded-full bg-black animate-pulse" />
                               Auto-Sending in {autoSendCountdown}s
                             </div>
