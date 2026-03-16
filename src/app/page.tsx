@@ -20,6 +20,8 @@ import {
   Trash2,
   Volume2,
   VolumeX,
+  Moon,
+  Sun,
 } from "lucide-react";
 import Papa from "papaparse";
 
@@ -58,6 +60,7 @@ const PREDEFINED_TEMPLATES = [
 // --- Main Page Component ---
 export default function EmailBotDashboard() {
   // State
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   const [gmailUser, setGmailUser] = useState("");
   const [gmailPass, setGmailPass] = useState("");
@@ -201,6 +204,13 @@ export default function EmailBotDashboard() {
   const [csvUploaded, setCsvUploaded] = useState(false);
 
   useEffect(() => {
+    const savedTheme = localStorage.getItem("hp_theme");
+    if (savedTheme) {
+      setIsDarkMode(savedTheme === "dark");
+    } else if (typeof window !== "undefined") {
+      setIsDarkMode(window.matchMedia("(prefers-color-scheme: dark)").matches);
+    }
+
     const savedAccounts = localStorage.getItem("hp_accounts");
     if (savedAccounts) {
       try {
@@ -258,6 +268,10 @@ export default function EmailBotDashboard() {
     const savedMuted = localStorage.getItem("hp_muted");
     if (savedMuted === "true") setIsMuted(true);
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("hp_theme", isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
 
   useEffect(() => {
     localStorage.setItem("hp_muted", isMuted.toString());
@@ -975,809 +989,843 @@ export default function EmailBotDashboard() {
 
   // --- UI Components ---
   return (
-    <div className="min-h-screen bg-white text-black font-mono selection:bg-gray-200 overflow-y-auto relative">
-      <main className="relative z-10 max-w-6xl mx-auto px-6 py-12">
-        {/* Header */}
-        <header className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 border-b border-black pb-4 gap-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold tracking-tight uppercase">
-                hackpilot
-              </h1>
-              <span className="bg-black text-white text-xs font-bold px-2 py-1 uppercase tracking-wider">
-                Beta
+    <div className={isDarkMode ? "dark" : ""}>
+      <div className="min-h-screen bg-[#fdfbf7] dark:bg-zinc-950 text-black dark:text-zinc-100 font-mono selection:bg-gray-200 dark:selection:bg-zinc-800 overflow-y-auto relative">
+        <main className="relative z-10 max-w-6xl mx-auto px-6 py-12">
+          {/* Header */}
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 border-b border-black dark:border-zinc-700 pb-4 gap-4">
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold tracking-tight uppercase">
+                  hackpilot
+                </h1>
+                <span className="bg-black text-white dark:bg-zinc-100 dark:text-zinc-900 text-xs font-bold px-2 py-1 uppercase tracking-wider">
+                  Beta
+                </span>
+              </div>
+              <div className="flex items-center gap-3 mt-1">
+                <p className="text-gray-500 dark:text-zinc-400 text-sm lowercase font-bold">
+                  organizer
+                </p>
+                {quota && (
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`text-xs font-bold uppercase px-2 py-0.5 border border-black dark:border-zinc-700 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
+                        quota.isUnlimited ||
+                        quota.usageToday < quota.limitPerDay
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      Quota:{" "}
+                      {quota.isUnlimited
+                        ? "Unlimited"
+                        : `${quota.usageToday} / ${quota.limitPerDay}`}
+                    </span>
+                    {!quota.isUnlimited && (
+                      <span className="text-xs font-bold uppercase px-2 py-0.5 border border-black dark:border-zinc-700 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-blue-100 text-blue-800">
+                        {quota.expiresAt
+                          ? `Expires in ${Math.max(
+                              0,
+                              Math.ceil(
+                                (new Date(quota.expiresAt).getTime() -
+                                  new Date().getTime()) /
+                                  (1000 * 60 * 60 * 24),
+                              ),
+                            )} days`
+                          : `Unactivated (${quota.durationDays} Days)`}
+                      </span>
+                    )}
+                  </div>
+                )}
+                <button
+                  onClick={() => setIsMuted(!isMuted)}
+                  className="text-gray-500 dark:text-zinc-400 hover:text-black dark:hover:text-zinc-100 transition-colors"
+                  title={isMuted ? "Unmute sounds" : "Mute sounds"}
+                >
+                  {isMuted ? (
+                    <VolumeX className="w-5 h-5" />
+                  ) : (
+                    <Volume2 className="w-5 h-5" />
+                  )}
+                </button>
+                <button
+                  onClick={() => setIsDarkMode(!isDarkMode)}
+                  className="text-gray-500 dark:text-zinc-400 hover:text-black dark:hover:text-zinc-100 transition-colors"
+                  title="Toggle Dark Mode"
+                >
+                  {isDarkMode ? (
+                    <Sun className="w-5 h-5" />
+                  ) : (
+                    <Moon className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-zinc-400 border border-black dark:border-zinc-700 px-4 py-2 bg-white dark:bg-zinc-900 w-fit">
+              <span
+                className={
+                  step === 1 ? "text-black dark:text-zinc-100 font-bold" : ""
+                }
+              >
+                1. Configure
+              </span>
+              <ChevronRight className="w-4 h-4" />
+              <span
+                className={
+                  step === 2 ? "text-black dark:text-zinc-100 font-bold" : ""
+                }
+              >
+                2. Review & Send
               </span>
             </div>
-            <div className="flex items-center gap-3 mt-1">
-              <p className="text-gray-500 text-sm lowercase font-bold">
-                organizer
-              </p>
-              {quota && (
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`text-xs font-bold uppercase px-2 py-0.5 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
-                      quota.isUnlimited || quota.usageToday < quota.limitPerDay
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    Quota:{" "}
-                    {quota.isUnlimited
-                      ? "Unlimited"
-                      : `${quota.usageToday} / ${quota.limitPerDay}`}
-                  </span>
-                  {!quota.isUnlimited && (
-                    <span className="text-xs font-bold uppercase px-2 py-0.5 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-blue-100 text-blue-800">
-                      {quota.expiresAt
-                        ? `Expires in ${Math.max(
-                            0,
-                            Math.ceil(
-                              (new Date(quota.expiresAt).getTime() -
-                                new Date().getTime()) /
-                                (1000 * 60 * 60 * 24),
-                            ),
-                          )} days`
-                        : `Unactivated (${quota.durationDays} Days)`}
-                    </span>
-                  )}
-                </div>
-              )}
-              <button
-                onClick={() => setIsMuted(!isMuted)}
-                className="text-gray-500 hover:text-black transition-colors"
-                title={isMuted ? "Unmute sounds" : "Mute sounds"}
+          </header>
+
+          <AnimatePresence mode="wait">
+            {step === 1 ? (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="grid grid-cols-1 lg:grid-cols-12 gap-8"
               >
-                {isMuted ? (
-                  <VolumeX className="w-5 h-5" />
-                ) : (
-                  <Volume2 className="w-5 h-5" />
-                )}
-              </button>
-            </div>
-          </div>
+                {/* Left Column - Config */}
+                <div className="lg:col-span-4 space-y-6">
+                  <div className="bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 p-6">
+                    <div className="flex items-center gap-2 mb-6 border-b border-black dark:border-zinc-700 pb-2">
+                      <Settings2 className="w-5 h-5 text-black dark:text-zinc-100" />
+                      <h2 className="text-lg font-bold uppercase">
+                        Integrations
+                      </h2>
+                    </div>
 
-          <div className="flex items-center gap-2 text-sm text-gray-500 border border-black px-4 py-2 bg-white w-fit">
-            <span className={step === 1 ? "text-black font-bold" : ""}>
-              1. Configure
-            </span>
-            <ChevronRight className="w-4 h-4" />
-            <span className={step === 2 ? "text-black font-bold" : ""}>
-              2. Review & Send
-            </span>
-          </div>
-        </header>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="flex items-center justify-between text-xs text-gray-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider font-bold">
+                          <span>Hackpilot Usage Code</span>
+                          <a
+                            href="mailto:shlokmadhekar88@gmail.com?subject=Hackpilot%20Usage%20Code%20Request&body=Hi%20Shlok%2C%0A%0AI%20would%20like%20to%20request%20a%20Hackpilot%20usage%20code.%0A%0AHackathon%20Name%3A%20%5BYour%20Hackathon%5D%0ADate%3A%20%5BDate%5D%0AExpected%20Attendees%3A%20%5BNumber%5D%0A%0AThanks%21"
+                            className="text-blue-500 hover:underline lowercase"
+                          >
+                            ask me &rarr;
+                          </a>
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showUsageCode ? "text" : "password"}
+                            value={usageCode}
+                            onChange={(e) => setUsageCode(e.target.value)}
+                            className="w-full bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 py-2.5 px-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-black transition-all"
+                            placeholder="e.g. WK-XXXXXX"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowUsageCode(!showUsageCode)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black dark:text-zinc-100"
+                          >
+                            {showUsageCode ? (
+                              <EyeOff className="w-4 h-4" />
+                            ) : (
+                              <Eye className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
 
-        <AnimatePresence mode="wait">
-          {step === 1 ? (
-            <motion.div
-              key="step1"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="grid grid-cols-1 lg:grid-cols-12 gap-8"
-            >
-              {/* Left Column - Config */}
-              <div className="lg:col-span-4 space-y-6">
-                <div className="bg-white border border-black p-6">
-                  <div className="flex items-center gap-2 mb-6 border-b border-black pb-2">
-                    <Settings2 className="w-5 h-5 text-black" />
-                    <h2 className="text-lg font-bold uppercase">
-                      Integrations
-                    </h2>
-                  </div>
+                      <div>
+                        <label className="text-xs text-gray-500 dark:text-zinc-400 mb-1.5 block uppercase tracking-wider font-bold">
+                          Gmail Address
+                        </label>
+                        <div className="relative">
+                          <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                          <input
+                            type="email"
+                            value={gmailUser}
+                            onChange={(e) => setGmailUser(e.target.value)}
+                            className="w-full bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-black transition-all"
+                            placeholder="you@gmail.com"
+                          />
+                        </div>
+                      </div>
 
-                  <div className="space-y-4">
-                    <div>
-                      <label className="flex items-center justify-between text-xs text-gray-500 mb-1.5 uppercase tracking-wider font-bold">
-                        <span>Hackpilot Usage Code</span>
-                        <a
-                          href="mailto:shlokmadhekar88@gmail.com?subject=Hackpilot%20Usage%20Code%20Request&body=Hi%20Shlok%2C%0A%0AI%20would%20like%20to%20request%20a%20Hackpilot%20usage%20code.%0A%0AHackathon%20Name%3A%20%5BYour%20Hackathon%5D%0ADate%3A%20%5BDate%5D%0AExpected%20Attendees%3A%20%5BNumber%5D%0A%0AThanks%21"
-                          className="text-blue-500 hover:underline lowercase"
-                        >
-                          ask me &rarr;
-                        </a>
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={showUsageCode ? "text" : "password"}
-                          value={usageCode}
-                          onChange={(e) => setUsageCode(e.target.value)}
-                          className="w-full bg-white border border-black py-2.5 px-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-black transition-all"
-                          placeholder="e.g. WK-XXXXXX"
-                        />
+                      <div className="flex items-center justify-between mt-6 mb-2 border-t border-gray-200 dark:border-zinc-800 pt-4">
+                        <h3 className="text-sm font-bold uppercase">
+                          Sending Accounts
+                        </h3>
                         <button
-                          type="button"
-                          onClick={() => setShowUsageCode(!showUsageCode)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
+                          onClick={() => setIsAdvancedMode(!isAdvancedMode)}
+                          className="text-xs bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-black dark:text-zinc-100 px-2 py-1 border border-black dark:border-zinc-700 font-bold uppercase"
                         >
-                          {showUsageCode ? (
-                            <EyeOff className="w-4 h-4" />
-                          ) : (
-                            <Eye className="w-4 h-4" />
-                          )}
+                          {isAdvancedMode ? "Basic Mode" : "Advanced Mode"}
                         </button>
                       </div>
-                    </div>
 
-                    <div>
-                      <label className="text-xs text-gray-500 mb-1.5 block uppercase tracking-wider font-bold">
-                        Gmail Address
-                      </label>
-                      <div className="relative">
-                        <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
-                          type="email"
-                          value={gmailUser}
-                          onChange={(e) => setGmailUser(e.target.value)}
-                          className="w-full bg-white border border-black py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-black transition-all"
-                          placeholder="you@gmail.com"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between mt-6 mb-2 border-t border-gray-200 pt-4">
-                      <h3 className="text-sm font-bold uppercase">
-                        Sending Accounts
-                      </h3>
-                      <button
-                        onClick={() => setIsAdvancedMode(!isAdvancedMode)}
-                        className="text-xs bg-gray-100 hover:bg-gray-200 text-black px-2 py-1 border border-black font-bold uppercase"
-                      >
-                        {isAdvancedMode ? "Basic Mode" : "Advanced Mode"}
-                      </button>
-                    </div>
-
-                    <div>
-                      <label className="text-xs text-gray-500 mb-1.5 block uppercase tracking-wider font-bold">
-                        CC Email (Optional)
-                      </label>
-                      <div className="relative">
-                        <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
-                          type="email"
-                          value={ccEmail}
-                          onChange={(e) => setCcEmail(e.target.value)}
-                          className="w-full bg-white border border-black py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-black transition-all"
-                          placeholder="team@myhackathon.com"
-                        />
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1.5">
-                        Send a copy of every approved email here for tracking.
-                      </p>
-                    </div>
-
-                    {!isAdvancedMode ? (
-                      <>
-                        <div>
-                          <label className="text-xs text-gray-500 mb-1.5 block uppercase tracking-wider font-bold">
-                            Gmail Address
-                          </label>
-                          <div className="relative">
-                            <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <input
-                              type="email"
-                              value={gmailUser}
-                              onChange={(e) => setGmailUser(e.target.value)}
-                              className="w-full bg-white border border-black py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-black transition-all"
-                              placeholder="you@gmail.com"
-                            />
-                          </div>
+                      <div>
+                        <label className="text-xs text-gray-500 dark:text-zinc-400 mb-1.5 block uppercase tracking-wider font-bold">
+                          CC Email (Optional)
+                        </label>
+                        <div className="relative">
+                          <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                          <input
+                            type="email"
+                            value={ccEmail}
+                            onChange={(e) => setCcEmail(e.target.value)}
+                            className="w-full bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-black transition-all"
+                            placeholder="team@myhackathon.com"
+                          />
                         </div>
-
-                        <div>
-                          <label className="flex items-center justify-between text-xs text-gray-500 mb-1.5 uppercase tracking-wider font-bold">
-                            <span>App Password</span>
-                            <a
-                              href="https://myaccount.google.com/apppasswords"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-500 hover:underline lowercase"
-                            >
-                              get one here &rarr;
-                            </a>
-                          </label>
-                          <div className="relative">
-                            <input
-                              type={showPassword ? "text" : "password"}
-                              value={gmailPass}
-                              onChange={(e) =>
-                                setGmailPass(e.target.value.replace(/\s/g, ""))
-                              }
-                              className="w-full bg-white border border-black py-2.5 px-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-black transition-all"
-                              placeholder="••••••••••••••••"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
-                            >
-                              {showPassword ? (
-                                <EyeOff className="w-4 h-4" />
-                              ) : (
-                                <Eye className="w-4 h-4" />
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="space-y-4">
-                        <p className="text-xs text-gray-500 mb-2">
-                          Add multiple sender accounts. Emails will be sent
-                          round-robin to avoid rate limits.
+                        <p className="text-xs text-gray-500 dark:text-zinc-400 mt-1.5">
+                          Send a copy of every approved email here for tracking.
                         </p>
-                        {accounts.map((acc, idx) => (
-                          <div
-                            key={acc.id}
-                            className="border border-gray-300 p-3 relative group"
-                          >
-                            {accounts.length > 1 && (
-                              <button
-                                onClick={() => removeAccount(acc.id)}
-                                className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            )}
-                            <div className="grid grid-cols-1 gap-3">
-                              <div>
-                                <input
-                                  type="text"
-                                  value={acc.name}
-                                  onChange={(e) =>
-                                    updateAccount(
-                                      acc.id,
-                                      "name",
-                                      e.target.value,
-                                    )
-                                  }
-                                  className="w-full bg-white border border-black py-1.5 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-black"
-                                  placeholder="Sender Name (e.g. John Doe)"
-                                />
-                              </div>
-                              <div className="grid grid-cols-2 gap-3">
-                                <input
-                                  type="email"
-                                  value={acc.email}
-                                  onChange={(e) =>
-                                    updateAccount(
-                                      acc.id,
-                                      "email",
-                                      e.target.value,
-                                    )
-                                  }
-                                  className="w-full bg-white border border-black py-1.5 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-black"
-                                  placeholder="Email Address"
-                                />
-                                <input
-                                  type={showPassword ? "text" : "password"}
-                                  value={acc.pass}
-                                  onChange={(e) =>
-                                    updateAccount(
-                                      acc.id,
-                                      "pass",
-                                      e.target.value.replace(/\s/g, ""),
-                                    )
-                                  }
-                                  className="w-full bg-white border border-black py-1.5 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-black"
-                                  placeholder="App Password"
-                                />
-                              </div>
+                      </div>
+
+                      {!isAdvancedMode ? (
+                        <>
+                          <div>
+                            <label className="text-xs text-gray-500 dark:text-zinc-400 mb-1.5 block uppercase tracking-wider font-bold">
+                              Gmail Address
+                            </label>
+                            <div className="relative">
+                              <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                              <input
+                                type="email"
+                                value={gmailUser}
+                                onChange={(e) => setGmailUser(e.target.value)}
+                                className="w-full bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-black transition-all"
+                                placeholder="you@gmail.com"
+                              />
                             </div>
                           </div>
-                        ))}
-                        <button
-                          onClick={addAccount}
-                          className="flex items-center gap-1 text-xs font-bold text-black border border-black px-3 py-1.5 hover:bg-gray-100 uppercase"
-                        >
-                          <Plus className="w-3 h-3" /> Add Account
-                        </button>
+
+                          <div>
+                            <label className="flex items-center justify-between text-xs text-gray-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider font-bold">
+                              <span>App Password</span>
+                              <a
+                                href="https://myaccount.google.com/apppasswords"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-500 hover:underline lowercase"
+                              >
+                                get one here &rarr;
+                              </a>
+                            </label>
+                            <div className="relative">
+                              <input
+                                type={showPassword ? "text" : "password"}
+                                value={gmailPass}
+                                onChange={(e) =>
+                                  setGmailPass(
+                                    e.target.value.replace(/\s/g, ""),
+                                  )
+                                }
+                                className="w-full bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 py-2.5 px-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-black transition-all"
+                                placeholder="••••••••••••••••"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black dark:text-zinc-100"
+                              >
+                                {showPassword ? (
+                                  <EyeOff className="w-4 h-4" />
+                                ) : (
+                                  <Eye className="w-4 h-4" />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="space-y-4">
+                          <p className="text-xs text-gray-500 dark:text-zinc-400 mb-2">
+                            Add multiple sender accounts. Emails will be sent
+                            round-robin to avoid rate limits.
+                          </p>
+                          {accounts.map((acc, idx) => (
+                            <div
+                              key={acc.id}
+                              className="border border-gray-300 dark:border-zinc-700 p-3 relative group"
+                            >
+                              {accounts.length > 1 && (
+                                <button
+                                  onClick={() => removeAccount(acc.id)}
+                                  className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
+                              <div className="grid grid-cols-1 gap-3">
+                                <div>
+                                  <input
+                                    type="text"
+                                    value={acc.name}
+                                    onChange={(e) =>
+                                      updateAccount(
+                                        acc.id,
+                                        "name",
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="w-full bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 py-1.5 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-black"
+                                    placeholder="Sender Name (e.g. John Doe)"
+                                  />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <input
+                                    type="email"
+                                    value={acc.email}
+                                    onChange={(e) =>
+                                      updateAccount(
+                                        acc.id,
+                                        "email",
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="w-full bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 py-1.5 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-black"
+                                    placeholder="Email Address"
+                                  />
+                                  <input
+                                    type={showPassword ? "text" : "password"}
+                                    value={acc.pass}
+                                    onChange={(e) =>
+                                      updateAccount(
+                                        acc.id,
+                                        "pass",
+                                        e.target.value.replace(/\s/g, ""),
+                                      )
+                                    }
+                                    className="w-full bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 py-1.5 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-black"
+                                    placeholder="App Password"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          <button
+                            onClick={addAccount}
+                            className="flex items-center gap-1 text-xs font-bold text-black dark:text-zinc-100 border border-black dark:border-zinc-700 px-3 py-1.5 hover:bg-gray-100 dark:bg-zinc-800 uppercase"
+                          >
+                            <Plus className="w-3 h-3" /> Add Account
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 p-6">
+                    <div className="flex items-center justify-between mb-4 border-b border-black dark:border-zinc-700 pb-2">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-black dark:text-zinc-100" />
+                        <h2 className="text-lg font-bold uppercase">
+                          Data Source
+                        </h2>
+                      </div>
+                    </div>
+
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="border-2 border-dashed border-black dark:border-zinc-700 p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-100 dark:bg-zinc-800 transition-all group"
+                    >
+                      <UploadCloud className="w-8 h-8 text-black dark:text-zinc-100 mb-3" />
+                      <p className="text-sm font-bold uppercase">
+                        Upload CSV Contacts
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-zinc-400 mt-1">
+                        Names & Emails required
+                      </p>
+                      <input
+                        type="file"
+                        accept=".csv"
+                        className="hidden"
+                        ref={fileInputRef}
+                        onChange={handleFileUpload}
+                      />
+                    </div>
+
+                    {csvUploaded && contacts.length > 0 && (
+                      <div className="mt-4 bg-gray-100 dark:bg-zinc-800 border border-black dark:border-zinc-700 text-black dark:text-zinc-100 p-3 text-sm flex items-center gap-2 font-bold">
+                        <CheckCircle2 className="w-4 h-4" />
+                        Loaded {contacts.length} contacts
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="bg-white border border-black p-6">
-                  <div className="flex items-center justify-between mb-4 border-b border-black pb-2">
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-black" />
-                      <h2 className="text-lg font-bold uppercase">
-                        Data Source
-                      </h2>
-                    </div>
-                  </div>
-
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-black p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-100 transition-all group"
-                  >
-                    <UploadCloud className="w-8 h-8 text-black mb-3" />
-                    <p className="text-sm font-bold uppercase">
-                      Upload CSV Contacts
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Names & Emails required
-                    </p>
-                    <input
-                      type="file"
-                      accept=".csv"
-                      className="hidden"
-                      ref={fileInputRef}
-                      onChange={handleFileUpload}
-                    />
-                  </div>
-
-                  {csvUploaded && contacts.length > 0 && (
-                    <div className="mt-4 bg-gray-100 border border-black text-black p-3 text-sm flex items-center gap-2 font-bold">
-                      <CheckCircle2 className="w-4 h-4" />
-                      Loaded {contacts.length} contacts
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Right Column - Template & Actions */}
-              <div className="lg:col-span-8 space-y-6 flex flex-col">
-                <div className="bg-white border border-black p-6 flex-1 flex flex-col">
-                  <div className="flex items-center justify-between mb-4 border-b border-black pb-2">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-black" />
-                      <h2 className="text-lg font-bold uppercase">
-                        Campaign Template
-                      </h2>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <select
-                        className="bg-white border border-black px-3 py-1.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-black font-bold"
-                        onChange={(e) => setSelectedTemplateId(e.target.value)}
-                        value={selectedTemplateId}
-                      >
-                        <option value="AUTO">✨ Auto-select via AI</option>
-                        {templates.map((t) => (
-                          <option key={t.id} value={t.id}>
-                            {t.name}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        onClick={() => {
-                          const newId = "t-" + Date.now();
-                          setTemplates([
-                            ...templates,
-                            { id: newId, name: "New Template", content: "" },
-                          ]);
-                          setSelectedTemplateId(newId);
-                        }}
-                        className="bg-black text-white p-1.5 border border-black hover:bg-gray-800 transition-colors"
-                        title="Add New Template"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="mb-4 bg-yellow-50 border border-yellow-400 p-3 text-xs text-yellow-800 font-bold uppercase flex items-start gap-2 shadow-[2px_2px_0px_0px_rgba(250,204,21,1)]">
-                    <span className="text-base leading-none">⚠️</span>
-                    <p>
-                      Important: You must manually replace [Hackathon Name],
-                      [Date], and [Your Name] in your templates. The AI cannot
-                      guess these details!
-                    </p>
-                  </div>
-
-                  {selectedTemplateId === "AUTO" ? (
-                    <div className="flex-1 flex flex-col gap-4 overflow-y-auto min-h-[300px]">
-                      <div className="bg-blue-50 border border-blue-400 p-3 text-xs text-blue-800 font-bold uppercase shadow-[2px_2px_0px_0px_rgba(59,130,246,1)]">
-                        AI will automatically choose the best template for each
-                        contact based on their details.
+                {/* Right Column - Template & Actions */}
+                <div className="lg:col-span-8 space-y-6 flex flex-col">
+                  <div className="bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 p-6 flex-1 flex flex-col">
+                    <div className="flex items-center justify-between mb-4 border-b border-black dark:border-zinc-700 pb-2">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-black dark:text-zinc-100" />
+                        <h2 className="text-lg font-bold uppercase">
+                          Campaign Template
+                        </h2>
                       </div>
-                      {templates.map((t, idx) => (
-                        <div
-                          key={t.id}
-                          className="border border-black bg-gray-50 p-4 relative group flex flex-col gap-2"
+                      <div className="flex items-center gap-2">
+                        <select
+                          className="bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 px-3 py-1.5 text-sm text-black dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-black font-bold"
+                          onChange={(e) =>
+                            setSelectedTemplateId(e.target.value)
+                          }
+                          value={selectedTemplateId}
                         >
-                          <div className="flex items-center justify-between gap-4">
-                            <input
-                              type="text"
-                              value={t.name}
+                          <option value="AUTO">✨ Auto-select via AI</option>
+                          {templates.map((t) => (
+                            <option key={t.id} value={t.id}>
+                              {t.name}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => {
+                            const newId = "t-" + Date.now();
+                            setTemplates([
+                              ...templates,
+                              { id: newId, name: "New Template", content: "" },
+                            ]);
+                            setSelectedTemplateId(newId);
+                          }}
+                          className="bg-black text-white dark:bg-zinc-100 dark:text-zinc-900 p-1.5 border border-black dark:border-zinc-700 hover:bg-gray-800 transition-colors"
+                          title="Add New Template"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="mb-4 bg-yellow-50 border border-yellow-400 p-3 text-xs text-yellow-800 font-bold uppercase flex items-start gap-2 shadow-[2px_2px_0px_0px_rgba(250,204,21,1)]">
+                      <span className="text-base leading-none">⚠️</span>
+                      <p>
+                        Important: You must manually replace [Hackathon Name],
+                        [Date], and [Your Name] in your templates. The AI cannot
+                        guess these details!
+                      </p>
+                    </div>
+
+                    {selectedTemplateId === "AUTO" ? (
+                      <div className="flex-1 flex flex-col gap-4 overflow-y-auto min-h-[300px]">
+                        <div className="bg-blue-50 border border-blue-400 p-3 text-xs text-blue-800 font-bold uppercase shadow-[2px_2px_0px_0px_rgba(59,130,246,1)]">
+                          AI will automatically choose the best template for
+                          each contact based on their details.
+                        </div>
+                        {templates.map((t, idx) => (
+                          <div
+                            key={t.id}
+                            className="border border-black dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800/50 p-4 relative group flex flex-col gap-2"
+                          >
+                            <div className="flex items-center justify-between gap-4">
+                              <input
+                                type="text"
+                                value={t.name}
+                                onChange={(e) => {
+                                  const newTemplates = [...templates];
+                                  newTemplates[idx].name = e.target.value;
+                                  setTemplates(newTemplates);
+                                }}
+                                className="font-bold uppercase bg-transparent border-b border-black dark:border-zinc-700 focus:outline-none w-full text-black dark:text-zinc-100"
+                                placeholder="Template Name"
+                              />
+                              {templates.length > 1 && (
+                                <button
+                                  onClick={() => {
+                                    setTemplates(
+                                      templates.filter(
+                                        (temp) => temp.id !== t.id,
+                                      ),
+                                    );
+                                  }}
+                                  className="text-red-500 hover:text-red-700"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
+                            <textarea
+                              value={t.content}
                               onChange={(e) => {
                                 const newTemplates = [...templates];
-                                newTemplates[idx].name = e.target.value;
+                                newTemplates[idx].content = e.target.value;
                                 setTemplates(newTemplates);
                               }}
-                              className="font-bold uppercase bg-transparent border-b border-black focus:outline-none w-full text-black"
-                              placeholder="Template Name"
+                              className="w-full bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 p-2 text-sm text-black dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-black resize-y min-h-[100px]"
+                              placeholder="Write your base template here."
                             />
-                            {templates.length > 1 && (
-                              <button
-                                onClick={() => {
-                                  setTemplates(
-                                    templates.filter(
-                                      (temp) => temp.id !== t.id,
-                                    ),
-                                  );
-                                }}
-                                className="text-red-500 hover:text-red-700"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            )}
                           </div>
-                          <textarea
-                            value={t.content}
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex-1 flex flex-col gap-4 min-h-[300px]">
+                        <div className="flex items-center gap-4">
+                          <input
+                            type="text"
+                            value={
+                              templates.find((t) => t.id === selectedTemplateId)
+                                ?.name || ""
+                            }
                             onChange={(e) => {
-                              const newTemplates = [...templates];
-                              newTemplates[idx].content = e.target.value;
-                              setTemplates(newTemplates);
+                              setTemplates(
+                                templates.map((t) =>
+                                  t.id === selectedTemplateId
+                                    ? { ...t, name: e.target.value }
+                                    : t,
+                                ),
+                              );
                             }}
-                            className="w-full bg-white border border-gray-300 p-2 text-sm text-black focus:outline-none focus:ring-1 focus:ring-black resize-y min-h-[100px]"
-                            placeholder="Write your base template here."
+                            className="font-bold uppercase text-lg bg-transparent border-b-2 border-black dark:border-zinc-700 focus:outline-none flex-1 text-black dark:text-zinc-100"
+                            placeholder="Template Name"
                           />
+                          {templates.length > 1 && (
+                            <button
+                              onClick={() => {
+                                setTemplates(
+                                  templates.filter(
+                                    (t) => t.id !== selectedTemplateId,
+                                  ),
+                                );
+                                setSelectedTemplateId("AUTO");
+                              }}
+                              className="text-red-500 hover:text-red-700 font-bold uppercase text-xs flex items-center gap-1 border border-red-500 px-2 py-1"
+                            >
+                              <Trash2 className="w-4 h-4" /> Delete
+                            </button>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex-1 flex flex-col gap-4 min-h-[300px]">
-                      <div className="flex items-center gap-4">
-                        <input
-                          type="text"
+                        <textarea
                           value={
                             templates.find((t) => t.id === selectedTemplateId)
-                              ?.name || ""
+                              ?.content || ""
                           }
                           onChange={(e) => {
                             setTemplates(
                               templates.map((t) =>
                                 t.id === selectedTemplateId
-                                  ? { ...t, name: e.target.value }
+                                  ? { ...t, content: e.target.value }
                                   : t,
                               ),
                             );
                           }}
-                          className="font-bold uppercase text-lg bg-transparent border-b-2 border-black focus:outline-none flex-1 text-black"
-                          placeholder="Template Name"
-                        />
-                        {templates.length > 1 && (
-                          <button
-                            onClick={() => {
-                              setTemplates(
-                                templates.filter(
-                                  (t) => t.id !== selectedTemplateId,
-                                ),
-                              );
-                              setSelectedTemplateId("AUTO");
-                            }}
-                            className="text-red-500 hover:text-red-700 font-bold uppercase text-xs flex items-center gap-1 border border-red-500 px-2 py-1"
-                          >
-                            <Trash2 className="w-4 h-4" /> Delete
-                          </button>
-                        )}
-                      </div>
-                      <textarea
-                        value={
-                          templates.find((t) => t.id === selectedTemplateId)
-                            ?.content || ""
-                        }
-                        onChange={(e) => {
-                          setTemplates(
-                            templates.map((t) =>
-                              t.id === selectedTemplateId
-                                ? { ...t, content: e.target.value }
-                                : t,
-                            ),
-                          );
-                        }}
-                        className="flex-1 w-full bg-white border border-black p-4 text-sm text-black focus:outline-none focus:ring-2 focus:ring-black transition-all resize-none leading-relaxed font-sans"
-                        placeholder="Write your base template here."
-                      />
-                    </div>
-                  )}
-
-                  <div className="mt-4 flex flex-col gap-3 border-t border-gray-200 pt-4">
-                    <label className="flex items-center gap-2 text-sm font-bold uppercase text-black cursor-pointer w-fit">
-                      <input
-                        type="checkbox"
-                        checked={sendProspectus}
-                        onChange={(e) => setSendProspectus(e.target.checked)}
-                        className="w-4 h-4 border-black border-2 rounded-none accent-black"
-                      />
-                      Attach Prospectus (First Email)
-                    </label>
-                    {sendProspectus && (
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => prospectusInputRef.current?.click()}
-                          className="text-xs bg-gray-100 hover:bg-gray-200 text-black px-3 py-1.5 border border-black font-bold uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
-                        >
-                          Upload PDF
-                        </button>
-                        <span className="text-xs text-gray-600 truncate max-w-[200px]">
-                          {prospectusFile
-                            ? prospectusFile.name
-                            : "No file selected"}
-                        </span>
-                        <input
-                          type="file"
-                          accept=".pdf"
-                          className="hidden"
-                          ref={prospectusInputRef}
-                          onChange={handleProspectusUpload}
+                          className="flex-1 w-full bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 p-4 text-sm text-black dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-black transition-all resize-none leading-relaxed font-sans"
+                          placeholder="Write your base template here."
                         />
                       </div>
                     )}
-                  </div>
 
-                  <div className="mt-6 flex justify-end">
-                    <button
-                      onClick={generateEmails}
-                      disabled={!contacts.length || isGenerating}
-                      className="bg-black hover:bg-gray-800 text-white px-8 py-3 font-bold uppercase transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
-                    >
-                      {isGenerating ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : (
-                        <Sparkles className="w-5 h-5" />
-                      )}
-                      {isGenerating
-                        ? "Generating..."
-                        : "Start Generating Emails"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="space-y-6"
-            >
-              <div className="flex justify-between items-center mb-8 border-b border-black pb-4">
-                <div>
-                  <h2 className="text-2xl font-bold uppercase">
-                    Review & Send
-                  </h2>
-                  <p className="text-gray-500 text-sm mt-1">
-                    Approve the AI-generated drafts before sending.
-                  </p>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 bg-gray-100 border border-black px-3 py-1.5">
-                      <label className="flex items-center gap-2 text-sm font-bold uppercase text-black cursor-pointer select-none">
+                    <div className="mt-4 flex flex-col gap-3 border-t border-gray-200 dark:border-zinc-800 pt-4">
+                      <label className="flex items-center gap-2 text-sm font-bold uppercase text-black dark:text-zinc-100 cursor-pointer w-fit">
                         <input
                           type="checkbox"
-                          checked={autoSendEnabled}
-                          onChange={(e) => setAutoSendEnabled(e.target.checked)}
-                          className="w-4 h-4 border-black border-2 rounded-none accent-black"
+                          checked={sendProspectus}
+                          onChange={(e) => setSendProspectus(e.target.checked)}
+                          className="w-4 h-4 border-black dark:border-zinc-700 border-2 rounded-none accent-black"
                         />
-                        Auto-Send
+                        Attach Prospectus (First Email)
                       </label>
-                      <div className="w-px h-4 bg-gray-400 mx-1"></div>
-                      <input
-                        type="number"
-                        min="1"
-                        max="60"
-                        value={autoSendDelay}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value, 10);
-                          if (!isNaN(val) && val > 0) setAutoSendDelay(val);
-                        }}
-                        disabled={autoSendEnabled}
-                        className="w-12 bg-white border border-black text-center text-sm font-bold py-1 focus:outline-none focus:ring-1 focus:ring-black disabled:opacity-50"
-                      />
-                      <span className="text-xs font-bold uppercase text-gray-500">
-                        sec
-                      </span>
-                    </div>
-                    <button
-                      onClick={downloadCSV}
-                      className="text-sm text-black hover:bg-gray-100 transition-colors flex items-center gap-2 bg-white border border-black px-4 py-2 font-bold uppercase"
-                    >
-                      <FileText className="w-4 h-4" /> Save Progress
-                    </button>
-                    <button
-                      onClick={stopGenerationAndGoBack}
-                      className="text-sm text-black hover:bg-gray-100 transition-colors flex items-center gap-2 border border-black px-4 py-2 font-bold uppercase h-full"
-                    >
-                      <Settings2 className="w-4 h-4" /> Back & Stop
-                    </button>
-                  </div>
-                  {autoSendDelay < 5 && (
-                    <span className="text-xs font-bold text-red-600 uppercase">
-                      ⚠️ Warning: Under 5s increases risk of spam blocking
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex flex-col items-center justify-center max-w-2xl mx-auto w-full relative min-h-[600px]">
-                <AnimatePresence mode="popLayout">
-                  {drafts.length > 0 && currentIndex < drafts.length ? (
-                    <motion.div
-                      key={drafts[currentIndex].id}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ type: "spring", bounce: 0.3 }}
-                      className={`w-full bg-white border border-black p-8 flex flex-col relative overflow-hidden transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
-                    >
-                      <div className="absolute top-0 right-0 flex items-center bg-white z-10">
-                        {autoSendEnabled && (
-                          <div className="px-4 py-3 text-xs font-bold text-black border-l border-b border-black bg-yellow-300 flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-black animate-pulse" />
-                            Auto-Sending in {autoSendCountdown}s
-                          </div>
-                        )}
-                        <div className="p-4 text-xs font-bold text-gray-500 border-l border-b border-black">
-                          {currentIndex + 1} / {drafts.length}{" "}
-                          {isGenerating ? "(Generating...)" : ""}
-                        </div>
-                      </div>
-
-                      <div className="mb-6">
-                        <div className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
-                          To
-                        </div>
-                        <div className="font-bold text-black text-lg">
-                          {drafts[currentIndex].contact.name}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          {drafts[currentIndex].contact.email}
-                        </div>
-                      </div>
-
-                      {isAdvancedMode && accounts.length > 0 && (
-                        <div className="mb-6 border-b border-gray-200 pb-4">
-                          <div className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
-                            Sending From
-                          </div>
-                          <div className="font-bold text-black text-sm">
-                            {
-                              accounts.filter((a) => a.email && a.pass)[
-                                currentIndex %
-                                  Math.max(
-                                    1,
-                                    accounts.filter((a) => a.email && a.pass)
-                                      .length,
-                                  )
-                              ]?.email
-                            }
-                          </div>
+                      {sendProspectus && (
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => prospectusInputRef.current?.click()}
+                            className="text-xs bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-black dark:text-zinc-100 px-3 py-1.5 border border-black dark:border-zinc-700 font-bold uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
+                          >
+                            Upload PDF
+                          </button>
+                          <span className="text-xs text-gray-600 dark:text-zinc-300 truncate max-w-[200px]">
+                            {prospectusFile
+                              ? prospectusFile.name
+                              : "No file selected"}
+                          </span>
+                          <input
+                            type="file"
+                            accept=".pdf"
+                            className="hidden"
+                            ref={prospectusInputRef}
+                            onChange={handleProspectusUpload}
+                          />
                         </div>
                       )}
+                    </div>
 
-                      <div className="mb-6">
-                        <div className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
-                          Subject
+                    <div className="mt-6 flex justify-end">
+                      <button
+                        onClick={generateEmails}
+                        disabled={!contacts.length || isGenerating}
+                        className="bg-black hover:bg-gray-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-300 dark:text-zinc-900 px-8 py-3 font-bold uppercase transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
+                      >
+                        {isGenerating ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <Sparkles className="w-5 h-5" />
+                        )}
+                        {isGenerating
+                          ? "Generating..."
+                          : "Start Generating Emails"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="space-y-6"
+              >
+                <div className="flex justify-between items-center mb-8 border-b border-black dark:border-zinc-700 pb-4">
+                  <div>
+                    <h2 className="text-2xl font-bold uppercase">
+                      Review & Send
+                    </h2>
+                    <p className="text-gray-500 dark:text-zinc-400 text-sm mt-1">
+                      Approve the AI-generated drafts before sending.
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2 bg-gray-100 dark:bg-zinc-800 border border-black dark:border-zinc-700 px-3 py-1.5">
+                        <label className="flex items-center gap-2 text-sm font-bold uppercase text-black dark:text-zinc-100 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={autoSendEnabled}
+                            onChange={(e) =>
+                              setAutoSendEnabled(e.target.checked)
+                            }
+                            className="w-4 h-4 border-black dark:border-zinc-700 border-2 rounded-none accent-black"
+                          />
+                          Auto-Send
+                        </label>
+                        <div className="w-px h-4 bg-gray-400 mx-1"></div>
+                        <input
+                          type="number"
+                          min="1"
+                          max="60"
+                          value={autoSendDelay}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value, 10);
+                            if (!isNaN(val) && val > 0) setAutoSendDelay(val);
+                          }}
+                          disabled={autoSendEnabled}
+                          className="w-12 bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 text-center text-sm font-bold py-1 focus:outline-none focus:ring-1 focus:ring-black disabled:opacity-50"
+                        />
+                        <span className="text-xs font-bold uppercase text-gray-500 dark:text-zinc-400">
+                          sec
+                        </span>
+                      </div>
+                      <button
+                        onClick={downloadCSV}
+                        className="text-sm text-black dark:text-zinc-100 hover:bg-gray-100 dark:bg-zinc-800 transition-colors flex items-center gap-2 bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 px-4 py-2 font-bold uppercase"
+                      >
+                        <FileText className="w-4 h-4" /> Save Progress
+                      </button>
+                      <button
+                        onClick={stopGenerationAndGoBack}
+                        className="text-sm text-black dark:text-zinc-100 hover:bg-gray-100 dark:bg-zinc-800 transition-colors flex items-center gap-2 border border-black dark:border-zinc-700 px-4 py-2 font-bold uppercase h-full"
+                      >
+                        <Settings2 className="w-4 h-4" /> Back & Stop
+                      </button>
+                    </div>
+                    {autoSendDelay < 5 && (
+                      <span className="text-xs font-bold text-red-600 uppercase">
+                        ⚠️ Warning: Under 5s increases risk of spam blocking
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-center justify-center max-w-2xl mx-auto w-full relative min-h-[600px]">
+                  <AnimatePresence mode="popLayout">
+                    {drafts.length > 0 && currentIndex < drafts.length ? (
+                      <motion.div
+                        key={drafts[currentIndex].id}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ type: "spring", bounce: 0.3 }}
+                        className={`w-full bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 p-8 flex flex-col relative overflow-hidden transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
+                      >
+                        <div className="absolute top-0 right-0 flex items-center bg-white dark:bg-zinc-900 z-10">
+                          {autoSendEnabled && (
+                            <div className="px-4 py-3 text-xs font-bold text-black dark:text-zinc-100 border-l border-b border-black dark:border-zinc-700 bg-yellow-300 flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full bg-black animate-pulse" />
+                              Auto-Sending in {autoSendCountdown}s
+                            </div>
+                          )}
+                          <div className="p-4 text-xs font-bold text-gray-500 dark:text-zinc-400 border-l border-b border-black dark:border-zinc-700">
+                            {currentIndex + 1} / {drafts.length}{" "}
+                            {isGenerating ? "(Generating...)" : ""}
+                          </div>
                         </div>
-                        <div className="text-md font-bold text-black border-b border-gray-200 pb-2 font-sans">
-                          {drafts[currentIndex].subject}
+
+                        <div className="mb-6">
+                          <div className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400 mb-1">
+                            To
+                          </div>
+                          <div className="font-bold text-black dark:text-zinc-100 text-lg">
+                            {drafts[currentIndex].contact.name}
+                          </div>
+                          <div className="text-sm text-gray-600 dark:text-zinc-300">
+                            {drafts[currentIndex].contact.email}
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="flex-1 bg-gray-50 p-6 mb-8 text-sm text-black whitespace-pre-wrap overflow-y-auto max-h-[300px] border border-black custom-scrollbar font-sans">
-                        {drafts[currentIndex].body}
-                      </div>
+                        {isAdvancedMode && accounts.length > 0 && (
+                          <div className="mb-6 border-b border-gray-200 dark:border-zinc-800 pb-4">
+                            <div className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400 mb-1">
+                              Sending From
+                            </div>
+                            <div className="font-bold text-black dark:text-zinc-100 text-sm">
+                              {
+                                accounts.filter((a) => a.email && a.pass)[
+                                  currentIndex %
+                                    Math.max(
+                                      1,
+                                      accounts.filter((a) => a.email && a.pass)
+                                        .length,
+                                    )
+                                ]?.email
+                              }
+                            </div>
+                          </div>
+                        )}
 
-                      <div className="grid grid-cols-3 gap-4 mt-auto">
-                        <button
-                          onClick={() => {
-                            setAutoSendEnabled(false);
-                            updateDraftStatus(
-                              drafts[currentIndex].id,
-                              "rejected",
-                            );
-                          }}
-                          className="flex flex-col items-center justify-center gap-2 py-3 hover:bg-red-50 text-black transition-colors border border-black font-bold uppercase text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
-                        >
-                          <XCircle className="w-5 h-5 text-red-500" />
-                          <span>Reject & Next</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            setAutoSendEnabled(false);
-                            regenerateDraft(drafts[currentIndex].id);
-                          }}
-                          className="flex flex-col items-center justify-center gap-2 py-3 hover:bg-gray-100 text-black transition-colors border border-black font-bold uppercase text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
-                        >
-                          <RefreshCw className="w-5 h-5" />
-                          <span>Retry</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            setAutoSendEnabled(false);
-                            updateDraftStatus(
-                              drafts[currentIndex].id,
-                              "approved",
-                            );
-                          }}
-                          className="flex flex-col items-center justify-center gap-2 py-3 bg-black hover:bg-gray-800 text-white transition-all border border-black font-bold uppercase text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
-                        >
-                          <Send className="w-5 h-5" />
-                          <span>Approve & Send</span>
-                        </button>
-                      </div>
-                    </motion.div>
-                  ) : isGenerating ? (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="w-full bg-white border border-black p-12 flex flex-col items-center justify-center min-h-[400px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-                    >
-                      <Loader2 className="w-12 h-12 text-black animate-spin mb-6" />
-                      <p className="text-black font-bold uppercase text-lg animate-pulse">
-                        Crafting your personalized emails...
-                      </p>
-                    </motion.div>
-                  ) : drafts.length > 0 ? (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="w-full bg-green-50 border border-black p-12 flex flex-col items-center justify-center min-h-[400px] text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-                    >
-                      <CheckCircle2 className="w-16 h-16 text-green-600 mb-6" />
-                      <h3 className="text-2xl font-bold text-black mb-2 uppercase">
-                        You're all caught up!
-                      </h3>
-                      <p className="text-gray-600 mb-8 max-w-md">
-                        You've reviewed all contacts in your list. Check your
-                        sent folder for the approved ones.
-                      </p>
-                      <div className="flex items-center gap-4">
-                        <button
-                          onClick={downloadCSV}
-                          className="bg-white hover:bg-gray-100 border border-black text-black px-6 py-3 font-bold uppercase transition-all flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
-                        >
-                          <FileText className="w-5 h-5" /> Download Remaining
-                        </button>
-                        <button
-                          onClick={stopGenerationAndGoBack}
-                          className="bg-black hover:bg-gray-800 text-white px-6 py-3 font-bold uppercase transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
-                        >
-                          Back to Home
-                        </button>
-                      </div>
-                    </motion.div>
-                  ) : null}
-                </AnimatePresence>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
+                        <div className="mb-6">
+                          <div className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-400 mb-1">
+                            Subject
+                          </div>
+                          <div className="text-md font-bold text-black dark:text-zinc-100 border-b border-gray-200 dark:border-zinc-800 pb-2 font-sans">
+                            {drafts[currentIndex].subject}
+                          </div>
+                        </div>
 
-      {/* Footer */}
-      <footer className="text-center py-8 border-t border-black mt-12 text-sm uppercase font-bold text-gray-500">
-        powered by{" "}
-        <a
-          href="https://hackpilot.io"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-black hover:underline"
-        >
-          hackpilot
-        </a>
-      </footer>
+                        <div className="flex-1 bg-gray-50 dark:bg-zinc-800/50 p-6 mb-8 text-sm text-black dark:text-zinc-100 whitespace-pre-wrap overflow-y-auto max-h-[300px] border border-black dark:border-zinc-700 custom-scrollbar font-sans">
+                          {drafts[currentIndex].body}
+                        </div>
 
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
+                        <div className="grid grid-cols-3 gap-4 mt-auto">
+                          <button
+                            onClick={() => {
+                              setAutoSendEnabled(false);
+                              updateDraftStatus(
+                                drafts[currentIndex].id,
+                                "rejected",
+                              );
+                            }}
+                            className="flex flex-col items-center justify-center gap-2 py-3 hover:bg-red-50 text-black dark:text-zinc-100 transition-colors border border-black dark:border-zinc-700 font-bold uppercase text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
+                          >
+                            <XCircle className="w-5 h-5 text-red-500" />
+                            <span>Reject & Next</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setAutoSendEnabled(false);
+                              regenerateDraft(drafts[currentIndex].id);
+                            }}
+                            className="flex flex-col items-center justify-center gap-2 py-3 hover:bg-gray-100 dark:bg-zinc-800 text-black dark:text-zinc-100 transition-colors border border-black dark:border-zinc-700 font-bold uppercase text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
+                          >
+                            <RefreshCw className="w-5 h-5" />
+                            <span>Retry</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setAutoSendEnabled(false);
+                              updateDraftStatus(
+                                drafts[currentIndex].id,
+                                "approved",
+                              );
+                            }}
+                            className="flex flex-col items-center justify-center gap-2 py-3 bg-black hover:bg-gray-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-300 dark:text-zinc-900 transition-all border border-black dark:border-zinc-700 font-bold uppercase text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
+                          >
+                            <Send className="w-5 h-5" />
+                            <span>Approve & Send</span>
+                          </button>
+                        </div>
+                      </motion.div>
+                    ) : isGenerating ? (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="w-full bg-white dark:bg-zinc-900 border border-black dark:border-zinc-700 p-12 flex flex-col items-center justify-center min-h-[400px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                      >
+                        <Loader2 className="w-12 h-12 text-black dark:text-zinc-100 animate-spin mb-6" />
+                        <p className="text-black dark:text-zinc-100 font-bold uppercase text-lg animate-pulse">
+                          Crafting your personalized emails...
+                        </p>
+                      </motion.div>
+                    ) : drafts.length > 0 ? (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="w-full bg-green-50 border border-black dark:border-zinc-700 p-12 flex flex-col items-center justify-center min-h-[400px] text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                      >
+                        <CheckCircle2 className="w-16 h-16 text-green-600 mb-6" />
+                        <h3 className="text-2xl font-bold text-black dark:text-zinc-100 mb-2 uppercase">
+                          You&apos;re all caught up!
+                        </h3>
+                        <p className="text-gray-600 dark:text-zinc-300 mb-8 max-w-md">
+                          You&apos;ve reviewed all contacts in your list. Check your
+                          sent folder for the approved ones.
+                        </p>
+                        <div className="flex items-center gap-4">
+                          <button
+                            onClick={downloadCSV}
+                            className="bg-white dark:bg-zinc-900 hover:bg-gray-100 dark:bg-zinc-800 border border-black dark:border-zinc-700 text-black dark:text-zinc-100 px-6 py-3 font-bold uppercase transition-all flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
+                          >
+                            <FileText className="w-5 h-5" /> Download Remaining
+                          </button>
+                          <button
+                            onClick={stopGenerationAndGoBack}
+                            className="bg-black hover:bg-gray-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-300 dark:text-zinc-900 px-6 py-3 font-bold uppercase transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
+                          >
+                            Back to Home
+                          </button>
+                        </div>
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </main>
+
+        {/* Footer */}
+        <footer className="text-center py-8 border-t border-black dark:border-zinc-700 mt-12 text-sm uppercase font-bold text-gray-500 dark:text-zinc-400">
+          powered by{" "}
+          <a
+            href="https://hackpilot.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-black dark:text-zinc-100 hover:underline"
+          >
+            hackpilot
+          </a>
+        </footer>
+
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
         .custom-scrollbar::-webkit-scrollbar {
           width: 8px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
           background: transparent;
-          border-left: 1px solid #000;
+          border-left: 1px solid var(--border-color, #000);
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #000;
+          background-color: var(--thumb-color, #000);
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-track {
+          border-left-color: #3f3f46;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+          background-color: #f4f4f5;
         }
       `,
-        }}
-      />
+          }}
+        />
+      </div>
     </div>
   );
 }
