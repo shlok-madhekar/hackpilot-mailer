@@ -76,6 +76,52 @@ export default function EmailBotDashboard() {
   const [isMuted, setIsMuted] = useState(false);
   const [autoSendDelay, setAutoSendDelay] = useState(8);
 
+  const playSkipSound = () => {
+    if (isMuted) return;
+    try {
+      const ctx = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      osc.type = "square";
+      osc.frequency.setValueAtTime(200, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.15);
+
+      gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } catch (e) {}
+  };
+
+  const playRegenerateSound = () => {
+    if (isMuted) return;
+    try {
+      const ctx = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(440, ctx.currentTime);
+      osc.frequency.setValueAtTime(660, ctx.currentTime + 0.05);
+
+      gainNode.gain.setValueAtTime(0.05, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.15);
+
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } catch (e) {}
+  };
+
   const playSendSound = () => {
     if (isMuted) return;
     try {
@@ -586,6 +632,10 @@ export default function EmailBotDashboard() {
     const draft = drafts.find((d) => d.id === id);
     let finalStatus = status;
 
+    if (status === "rejected") {
+      playSkipSound();
+    }
+
     if (status === "approved") {
       const activeAccounts = isAdvancedMode
         ? accounts.filter((a) => a.email && a.pass)
@@ -737,6 +787,8 @@ export default function EmailBotDashboard() {
       alert("You don't have enough quota left to regenerate (costs 0.5).");
       return;
     }
+
+    playRegenerateSound();
 
     setDrafts((prev) =>
       prev.map((d) =>
