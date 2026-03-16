@@ -1396,6 +1396,26 @@ export default function EmailBotDashboard() {
                         </div>
                       </div>
 
+                      {isAdvancedMode && accounts.length > 0 && (
+                        <div className="mb-6 border-b border-gray-200 pb-4">
+                          <div className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
+                            Sending From
+                          </div>
+                          <div className="font-bold text-black text-sm">
+                            {
+                              accounts.filter((a) => a.email && a.pass)[
+                                currentIndex %
+                                  Math.max(
+                                    1,
+                                    accounts.filter((a) => a.email && a.pass)
+                                      .length,
+                                  )
+                              ]?.email
+                            }
+                          </div>
+                        </div>
+                      )}
+
                       <div className="mb-6">
                         <div className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
                           Subject
