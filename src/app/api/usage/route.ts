@@ -30,11 +30,13 @@ export async function GET(req: Request) {
     }
 
     // Fetch the code from the database
-    const { data: codeData, error: fetchError } = await supabase
+    const { data, error: fetchError } = await supabase
       .from("usage_codes")
       .select("*")
       .eq("code", codeString)
       .single();
+
+    const codeData = data as any;
 
     if (fetchError || !codeData) {
       return NextResponse.json(

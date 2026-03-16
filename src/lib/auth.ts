@@ -25,11 +25,13 @@ export async function checkAndIncrementUsage(
 
   try {
     // 1. Fetch the code from the database
-    const { data: codeData, error: fetchError } = await supabase
+    const { data, error: fetchError } = await supabase
       .from("usage_codes")
       .select("*")
       .eq("code", codeString)
       .single();
+
+    const codeData = data as any;
 
     if (fetchError || !codeData) {
       return { valid: false, error: "Invalid usage code." };
@@ -87,8 +89,8 @@ export async function checkAndIncrementUsage(
 
     // 7. Save Changes to Supabase
     if (hasChanges) {
-      const { error: updateError } = await supabase
-        .from("usage_codes")
+      // Need to cast as any to bypass strict un-inferred generic typing on update payload
+      const { error: updateError } = await (supabase.from("usage_codes") as any)
         .update(updates)
         .eq("code", codeString);
 
