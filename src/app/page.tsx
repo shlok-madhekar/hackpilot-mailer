@@ -247,6 +247,8 @@ export default function EmailBotDashboard() {
     reader.readAsDataURL(file);
   };
 
+  const [csvUploaded, setCsvUploaded] = useState(false);
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -270,6 +272,7 @@ export default function EmailBotDashboard() {
             }))
             .filter((c: any) => Object.keys(c).length > 0);
           setContacts(parsedContacts);
+          setCsvUploaded(true);
         },
       });
     }
@@ -399,9 +402,22 @@ export default function EmailBotDashboard() {
 
         const updatedContact = { ...contact, email: targetEmail };
 
-        setQuota((prev) =>
-          prev ? { ...prev, usageToday: prev.usageToday + 1 } : prev,
-        );
+        // Force a re-fetch of the quota from the backend so that
+        // activatedAt and expiresAt populate if it was just activated
+        fetch(`/api/usage?code=${usageCode}`)
+          .then((res) => res.json())
+          .then((usageData) => {
+            if (usageData.valid) {
+              setQuota({
+                usageToday: usageData.usageToday,
+                limitPerDay: usageData.limitPerDay,
+                isUnlimited: usageData.isUnlimited,
+                expiresAt: usageData.expiresAt,
+                activatedAt: usageData.activatedAt,
+                durationDays: usageData.durationDays,
+              });
+            }
+          });
 
         setDrafts((prev) => [
           ...prev,
@@ -981,6 +997,13 @@ export default function EmailBotDashboard() {
                       onChange={handleFileUpload}
                     />
                   </div>
+
+                  {csvUploaded && contacts.length > 0 && (
+                    <div className="mt-4 bg-gray-100 border border-black text-black p-3 text-sm flex items-center gap-2 font-bold">
+                      <CheckCircle2 className="w-4 h-4" />
+                      Loaded {contacts.length} contacts
+                    </div>
+                  )}
                 </div>
               </div>
 

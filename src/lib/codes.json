@@ -3,9 +3,9 @@
     "code": "WK-IL4BG4",
     "limitPerDay": 100,
     "durationDays": 7,
-    "activatedAt": null,
-    "expiresAt": null,
-    "usageToday": 0,
+    "activatedAt": "2026-03-16T00:24:04.072Z",
+    "expiresAt": "2026-03-23T00:24:04.072Z",
+    "usageToday": 10,
     "lastReset": "2026-03-16"
   },
   {
