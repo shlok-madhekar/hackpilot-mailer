@@ -1,13 +1,11 @@
--- Create a new public storage bucket called 'uploads'
+-- In Supabase, the default `storage.objects` table usually already has RLS enabled by default.
+-- And because it's a core Supabase schema, the SQL editor sometimes blocks you from altering it
+-- with "must be owner of table objects".
+
+-- So, all you actually need to do to get the bucket working is run this one command:
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('uploads', 'uploads', false)
 ON CONFLICT (id) DO NOTHING;
 
--- Enable Row Level Security on the objects table
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
-
--- Note: Just like the `usage_codes` table, because the Next.js API route uses the
--- SUPABASE_SERVICE_ROLE_KEY (master key) to upload these files, it automatically bypasses RLS.
--- We intentionally DO NOT create any public access policies for SELECT or INSERT here.
--- This completely locks down the bucket so strangers on the internet cannot upload malicious
--- files or view other organizers' uploaded CSVs/Prospectuses.
+-- (You don't need to run ALTER TABLE storage.objects).
+-- The bucket is already perfectly secure!

@@ -304,6 +304,7 @@ export default function EmailBotDashboard() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const prospectusInputRef = useRef<HTMLInputElement>(null);
   const cancelRef = useRef(false);
+  const isGeneratingRef = useRef(false);
   // --- Handlers ---
   const handleProspectusUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -380,6 +381,7 @@ export default function EmailBotDashboard() {
   };
 
   const generateEmails = async () => {
+    if (isGeneratingRef.current) return;
     if (!contacts.length) {
       alert("Please upload contacts first.");
       return;
@@ -390,12 +392,11 @@ export default function EmailBotDashboard() {
       );
       return;
     }
-    cancelRef.current = false;
-    setIsGenerating(true);
-    setStep(2);
 
     // Don't reset drafts if we're seamlessly loading the next batch
-    const draftedEmails = new Set(drafts.map((d) => d.contact.email));
+    const draftedEmails = new Set(
+      drafts.map((d) => d.contact.originalEmail || d.contact.email),
+    );
 
     // Filter out contacts that are already sent or rejected, AND not already in drafts
     const contactsToProcess = contacts
@@ -409,6 +410,7 @@ export default function EmailBotDashboard() {
 
     if (!contactsToProcess.length) {
       setIsGenerating(false);
+      isGeneratingRef.current = false;
       if (drafts.length === 0) {
         alert("All contacts have been processed!");
         setStep(1);
@@ -419,10 +421,15 @@ export default function EmailBotDashboard() {
     if (sendProspectus && !prospectusFile) {
       alert("You selected 'Attach Prospectus' but didn't upload a file.");
       setIsGenerating(false);
+      isGeneratingRef.current = false;
       setStep(1);
       return;
     }
 
+    cancelRef.current = false;
+    setIsGenerating(true);
+    isGeneratingRef.current = true;
+    setStep(2);
     // Process sequentially or in small batches to avoid rate limits
     for (const contact of contactsToProcess) {
       if (cancelRef.current) break;
@@ -509,7 +516,11 @@ export default function EmailBotDashboard() {
 
         body = lines.slice(bodyStartIndex).join("\n").trim();
 
-        const updatedContact = { ...contact, email: targetEmail };
+        const updatedContact = {
+          ...contact,
+          email: targetEmail,
+          originalEmail: contact.email,
+        };
 
         // Force a re-fetch of the quota from the backend so that
         // activatedAt and expiresAt populate if it was just activated
@@ -545,12 +556,14 @@ export default function EmailBotDashboard() {
           `Error generating email for ${contact.email}: ${error.message || "Failed to connect to AI API"}`,
         );
         setIsGenerating(false);
+        isGeneratingRef.current = false;
         setStep(1);
         return;
       }
     }
 
     setIsGenerating(false);
+    isGeneratingRef.current = false;
   };
 
   const updateDraftStatus = async (
@@ -643,7 +656,9 @@ export default function EmailBotDashboard() {
     if (draft) {
       setContacts((prev) =>
         prev.map((c) =>
-          c.email === draft.contact.email ? { ...c, status: finalStatus } : c,
+          c.email === (draft.contact.originalEmail || draft.contact.email)
+            ? { ...c, status: finalStatus }
+            : c,
         ),
       );
     }
@@ -657,11 +672,14 @@ export default function EmailBotDashboard() {
     if (
       step === 2 &&
       !isGenerating &&
+      !isGeneratingRef.current &&
       drafts.length > 0 &&
       currentIndex >= drafts.length - 2 &&
       !cancelRef.current
     ) {
-      const draftedEmails = new Set(drafts.map((d) => d.contact.email));
+      const draftedEmails = new Set(
+        drafts.map((d) => d.contact.originalEmail || d.contact.email),
+      );
       const remaining = contacts.filter(
         (c) =>
           c.status !== "sent" &&
@@ -857,6 +875,7 @@ export default function EmailBotDashboard() {
   const stopGenerationAndGoBack = () => {
     cancelRef.current = true;
     setIsGenerating(false);
+    isGeneratingRef.current = false;
     setAutoSendEnabled(false);
     setDrafts([]);
     setCurrentIndex(0);
