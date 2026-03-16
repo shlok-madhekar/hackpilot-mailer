@@ -106,6 +106,29 @@ export default function EmailBotDashboard() {
     { id: "1", name: "", email: "", pass: "" },
   ]);
 
+  const [contacts, setContacts] = useState<Contact[]>([
+    { name: "BACH HackerSpaces", email: "bach@lists.hackerspaces.org" },
+    { name: "Plug And Play Tech Center", email: "allison@pnptc.com" },
+    { name: "Raspberry Pi Foundation", email: "legal@raspberrypi.org" },
+    { name: "Broadcom", email: "davy.chou@broadcom.com" },
+    { name: "Palo Alto Networks", email: "mstapleton@paloaltonetworks.com" },
+    { name: "AMD", email: "aelshimi@amd.com" },
+    { name: "Nokia", email: "dave.korn@nokia.com" },
+    { name: "RapidAPI", email: "privacy@rapidAPI.com" },
+    { name: "AoPS", email: "student-services@aops.com" },
+    { name: "Juniper Networks", email: "dand@juniper.net" },
+    { name: "Desmos", email: "support@desmos.com" },
+    { name: "Wolfram", email: "sw-media@wolfram.com" },
+    { name: "Echo3D", email: "megan@echo3d.com" },
+    { name: "LaunchX", email: "info@launchx.com" },
+    { name: "Oracle", email: "heather.vancura@oracle.com" },
+    { name: "Meta", email: "braddressler@meta.com" },
+    { name: "Bay Area 3D Printing", email: "sales@bayarea3dprinting.com" },
+    { name: "Micron", email: "hrsupport_na@micron.com" },
+  ]);
+
+  const [csvUploaded, setCsvUploaded] = useState(false);
+
   useEffect(() => {
     const savedAccounts = localStorage.getItem("hp_accounts");
     if (savedAccounts) {
@@ -265,26 +288,6 @@ export default function EmailBotDashboard() {
     name: string;
     base64: string;
   } | null>(null);
-  const [contacts, setContacts] = useState<Contact[]>([
-    { name: "BACH HackerSpaces", email: "bach@lists.hackerspaces.org" },
-    { name: "Plug And Play Tech Center", email: "allison@pnptc.com" },
-    { name: "Raspberry Pi Foundation", email: "legal@raspberrypi.org" },
-    { name: "Broadcom", email: "davy.chou@broadcom.com" },
-    { name: "Palo Alto Networks", email: "mstapleton@paloaltonetworks.com" },
-    { name: "AMD", email: "aelshimi@amd.com" },
-    { name: "Nokia", email: "dave.korn@nokia.com" },
-    { name: "RapidAPI", email: "privacy@rapidAPI.com" },
-    { name: "AoPS", email: "student-services@aops.com" },
-    { name: "Juniper Networks", email: "dand@juniper.net" },
-    { name: "Desmos", email: "support@desmos.com" },
-    { name: "Wolfram", email: "sw-media@wolfram.com" },
-    { name: "Echo3D", email: "megan@echo3d.com" },
-    { name: "LaunchX", email: "info@launchx.com" },
-    { name: "Oracle", email: "heather.vancura@oracle.com" },
-    { name: "Meta", email: "braddressler@meta.com" },
-    { name: "Bay Area 3D Printing", email: "sales@bayarea3dprinting.com" },
-    { name: "Micron", email: "hrsupport_na@micron.com" },
-  ]);
 
   const [drafts, setDrafts] = useState<EmailDraft[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -293,7 +296,6 @@ export default function EmailBotDashboard() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const prospectusInputRef = useRef<HTMLInputElement>(null);
   const cancelRef = useRef(false);
-
   // --- Handlers ---
   const handleProspectusUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -308,8 +310,6 @@ export default function EmailBotDashboard() {
     };
     reader.readAsDataURL(file);
   };
-
-  const [csvUploaded, setCsvUploaded] = useState(false);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
