@@ -122,6 +122,29 @@ export default function EmailBotDashboard() {
     } catch (e) {}
   };
 
+  const playClickSound = () => {
+    if (isMuted) return;
+    try {
+      const ctx = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(600, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.05);
+
+      gainNode.gain.setValueAtTime(0.05, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.05);
+    } catch (e) {}
+  };
+
   const playSendSound = () => {
     if (isMuted) return;
     try {
@@ -470,6 +493,10 @@ export default function EmailBotDashboard() {
       isGeneratingRef.current = false;
       setStep(1);
       return;
+    }
+
+    if (step === 1) {
+      playClickSound();
     }
 
     cancelRef.current = false;
