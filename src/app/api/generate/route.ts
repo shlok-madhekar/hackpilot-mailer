@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     const { prompt, usageCode, isRegeneration, temperature = 0.7 } = body;
 
     const cost = isRegeneration ? 0.5 : 1;
-    const usageCheck = checkAndIncrementUsage(usageCode, cost);
+    const usageCheck = await checkAndIncrementUsage(usageCode, cost);
     if (!usageCheck.valid) {
       return NextResponse.json({ error: usageCheck.error }, { status: 403 });
     }

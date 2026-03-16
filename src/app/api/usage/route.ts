@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { createClient } from "@supabase/supabase-js";
 
-const codesPath = path.join(process.cwd(), "src/lib/codes.json");
+// Initialize Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+
+let supabase: ReturnType<typeof createClient> | null = null;
+if (supabaseUrl && supabaseKey) {
+  supabase = createClient(supabaseUrl, supabaseKey);
+}
 
 export async function GET(req: Request) {
   try {
@@ -16,17 +22,21 @@ export async function GET(req: Request) {
       );
     }
 
-    if (!fs.existsSync(codesPath)) {
+    if (!supabase) {
       return NextResponse.json(
-        { error: "Codes database not found" },
+        { error: "Supabase configuration is missing on the server." },
         { status: 500 },
       );
     }
 
-    const codes = JSON.parse(fs.readFileSync(codesPath, "utf8"));
-    const code = codes.find((c: any) => c.code === codeString);
+    // Fetch the code from the database
+    const { data: codeData, error: fetchError } = await supabase
+      .from("usage_codes")
+      .select("*")
+      .eq("code", codeString)
+      .single();
 
-    if (!code) {
+    if (fetchError || !codeData) {
       return NextResponse.json(
         { error: "Invalid usage code" },
         { status: 404 },
@@ -34,7 +44,7 @@ export async function GET(req: Request) {
     }
 
     // Check Expiry
-    if (code.expiresAt && new Date() > new Date(code.expiresAt)) {
+    if (codeData.expiresAt && new Date() > new Date(codeData.expiresAt)) {
       return NextResponse.json(
         { error: "Usage code has expired" },
         { status: 403 },
@@ -43,19 +53,19 @@ export async function GET(req: Request) {
 
     // Check daily reset
     const today = new Date().toISOString().split("T")[0];
-    let usageToday = code.usageToday;
-    if (code.lastReset !== today) {
+    let usageToday = codeData.usageToday;
+    if (codeData.lastReset !== today) {
       usageToday = 0;
     }
 
     return NextResponse.json({
       valid: true,
       usageToday,
-      limitPerDay: code.limitPerDay,
-      isUnlimited: code.limitPerDay === -1,
-      expiresAt: code.expiresAt,
-      activatedAt: code.activatedAt,
-      durationDays: code.durationDays,
+      limitPerDay: codeData.limitPerDay,
+      isUnlimited: codeData.limitPerDay === -1,
+      expiresAt: codeData.expiresAt,
+      activatedAt: codeData.activatedAt,
+      durationDays: codeData.durationDays,
     });
   } catch (error: any) {
     return NextResponse.json(

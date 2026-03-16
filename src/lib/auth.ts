@@ -1,71 +1,106 @@
-import fs from "fs";
-import path from "path";
+import { createClient } from "@supabase/supabase-js";
 
-const codesPath = path.join(process.cwd(), "src/lib/codes.json");
+// Initialize Supabase client
+// These environment variables need to be set in Vercel/local .env
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
-export function checkAndIncrementUsage(
+let supabase: ReturnType<typeof createClient> | null = null;
+if (supabaseUrl && supabaseKey) {
+  supabase = createClient(supabaseUrl, supabaseKey);
+}
+
+export async function checkAndIncrementUsage(
   codeString: string,
   incrementAmount: number = 0,
-): { valid: boolean; error?: string } {
+): Promise<{ valid: boolean; error?: string }> {
   if (!codeString) return { valid: false, error: "Usage code required." };
 
-  if (!fs.existsSync(codesPath))
-    return { valid: false, error: "Codes database not found." };
+  if (!supabase) {
+    return {
+      valid: false,
+      error: "Supabase configuration is missing on the server.",
+    };
+  }
 
-  let codes = [];
   try {
-    codes = JSON.parse(fs.readFileSync(codesPath, "utf8"));
-  } catch (e) {
-    return { valid: false, error: "Error reading codes." };
-  }
+    // 1. Fetch the code from the database
+    const { data: codeData, error: fetchError } = await supabase
+      .from("usage_codes")
+      .select("*")
+      .eq("code", codeString)
+      .single();
 
-  const codeIndex = codes.findIndex((c: any) => c.code === codeString);
-  if (codeIndex === -1) return { valid: false, error: "Invalid usage code." };
-
-  const code = codes[codeIndex];
-  let hasChanges = false;
-
-  // Activate code on first use (only if actually using/incrementing)
-  if (incrementAmount > 0 && code.durationDays !== null && !code.activatedAt) {
-    code.activatedAt = new Date().toISOString();
-    const expDate = new Date();
-    expDate.setDate(expDate.getDate() + code.durationDays);
-    code.expiresAt = expDate.toISOString();
-    hasChanges = true;
-  }
-
-  // Check Expiry
-  if (code.expiresAt && new Date() > new Date(code.expiresAt)) {
-    return { valid: false, error: "Usage code has expired." };
-  }
-
-  // Check daily reset
-  const today = new Date().toISOString().split("T")[0];
-  if (code.lastReset !== today) {
-    code.usageToday = 0;
-    code.lastReset = today;
-    hasChanges = true;
-  }
-
-  // Check limit
-  if (code.limitPerDay !== -1 && code.usageToday >= code.limitPerDay) {
-    return { valid: false, error: "Daily limit reached for this code." };
-  }
-
-  if (incrementAmount > 0) {
-    code.usageToday += incrementAmount;
-    hasChanges = true;
-  }
-
-  if (hasChanges) {
-    try {
-      fs.writeFileSync(codesPath, JSON.stringify(codes, null, 2));
-    } catch (error) {
-      console.warn(
-        "Notice: Running in a read-only environment (like Vercel). Usage quotas will not persist across server cold-starts unless you connect a database.",
-      );
+    if (fetchError || !codeData) {
+      return { valid: false, error: "Invalid usage code." };
     }
-  }
 
-  return { valid: true };
+    let hasChanges = false;
+    const updates: any = {};
+
+    // 2. Activate code on first use (only if actually using/incrementing)
+    if (
+      incrementAmount > 0 &&
+      codeData.durationDays !== null &&
+      !codeData.activatedAt
+    ) {
+      const activatedAt = new Date();
+      updates.activatedAt = activatedAt.toISOString();
+
+      const expDate = new Date(activatedAt);
+      expDate.setDate(expDate.getDate() + codeData.durationDays);
+      updates.expiresAt = expDate.toISOString();
+
+      codeData.activatedAt = updates.activatedAt;
+      codeData.expiresAt = updates.expiresAt;
+      hasChanges = true;
+    }
+
+    // 3. Check Expiry
+    if (codeData.expiresAt && new Date() > new Date(codeData.expiresAt)) {
+      return { valid: false, error: "Usage code has expired." };
+    }
+
+    // 4. Check Daily Reset
+    const today = new Date().toISOString().split("T")[0];
+    if (codeData.lastReset !== today) {
+      codeData.usageToday = 0;
+      updates.usageToday = 0;
+      updates.lastReset = today;
+      hasChanges = true;
+    }
+
+    // 5. Check Limit
+    if (
+      codeData.limitPerDay !== -1 &&
+      codeData.usageToday >= codeData.limitPerDay
+    ) {
+      return { valid: false, error: "Daily limit reached for this code." };
+    }
+
+    // 6. Apply Increment
+    if (incrementAmount > 0) {
+      updates.usageToday =
+        (updates.usageToday ?? codeData.usageToday) + incrementAmount;
+      hasChanges = true;
+    }
+
+    // 7. Save Changes to Supabase
+    if (hasChanges) {
+      const { error: updateError } = await supabase
+        .from("usage_codes")
+        .update(updates)
+        .eq("code", codeString);
+
+      if (updateError) {
+        console.error("Failed to update usage code in Supabase:", updateError);
+        return { valid: false, error: "Failed to update usage limits." };
+      }
+    }
+
+    return { valid: true };
+  } catch (err: any) {
+    console.error("Supabase Auth Error:", err);
+    return { valid: false, error: "Database connection error." };
+  }
 }

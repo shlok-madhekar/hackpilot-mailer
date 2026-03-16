@@ -18,7 +18,7 @@ export async function POST(req: Request) {
       attachmentName,
     } = body;
 
-    const usageCheck = checkAndIncrementUsage(usageCode, 0);
+    const usageCheck = await checkAndIncrementUsage(usageCode, 0);
     if (!usageCheck.valid) {
       return NextResponse.json({ error: usageCheck.error }, { status: 403 });
     }
