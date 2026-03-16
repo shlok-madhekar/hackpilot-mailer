@@ -65,6 +65,9 @@ export default function EmailBotDashboard() {
     usageToday: number;
     limitPerDay: number;
     isUnlimited: boolean;
+    expiresAt?: string;
+    activatedAt?: string;
+    durationDays?: number;
   } | null>(null);
 
   const [isAdvancedMode, setIsAdvancedMode] = useState(false);
@@ -167,6 +170,9 @@ export default function EmailBotDashboard() {
               usageToday: data.usageToday,
               limitPerDay: data.limitPerDay,
               isUnlimited: data.isUnlimited,
+              expiresAt: data.expiresAt,
+              activatedAt: data.activatedAt,
+              durationDays: data.durationDays,
             });
           } else {
             setQuota(null);
@@ -692,18 +698,34 @@ export default function EmailBotDashboard() {
                 organizer
               </p>
               {quota && (
-                <span
-                  className={`text-xs font-bold uppercase px-2 py-0.5 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
-                    quota.isUnlimited || quota.usageToday < quota.limitPerDay
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  Quota:{" "}
-                  {quota.isUnlimited
-                    ? "Unlimited"
-                    : `${quota.usageToday} / ${quota.limitPerDay}`}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`text-xs font-bold uppercase px-2 py-0.5 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
+                      quota.isUnlimited || quota.usageToday < quota.limitPerDay
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    Quota:{" "}
+                    {quota.isUnlimited
+                      ? "Unlimited"
+                      : `${quota.usageToday} / ${quota.limitPerDay}`}
+                  </span>
+                  {!quota.isUnlimited && (
+                    <span className="text-xs font-bold uppercase px-2 py-0.5 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-blue-100 text-blue-800">
+                      {quota.expiresAt
+                        ? `Expires in ${Math.max(
+                            0,
+                            Math.ceil(
+                              (new Date(quota.expiresAt).getTime() -
+                                new Date().getTime()) /
+                                (1000 * 60 * 60 * 24),
+                            ),
+                          )} days`
+                        : `Unactivated (${quota.durationDays} Days)`}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
           </div>

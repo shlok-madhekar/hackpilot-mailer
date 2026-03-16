@@ -1,360 +1,461 @@
 [
   {
-    "Don't release this code, just for testing",
-    "code": "WK-P4J7KQ",
+    "code": "WK-IL4BG4",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.804Z",
-    "usageToday": 12.5,
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
+    "usageToday": 0,
     "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-0J2XT9",
+    "code": "WK-HJJ8OC",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-NJCV81",
+    "code": "WK-D2Q9T2",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-CEVESX",
+    "code": "WK-VBJNYR",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-ZIP9PU",
+    "code": "WK-BF7MG0",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-97OJEO",
+    "code": "WK-QRVFRC",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-P1APGP",
+    "code": "WK-D3BFVL",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-6XYRC0",
+    "code": "WK-SNFZ4E",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-5RBLDR",
+    "code": "WK-SA9532",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-5L2KCY",
+    "code": "WK-REZT2G",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-UAOD8Q",
+    "code": "WK-D4WQQE",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-4GQN58",
+    "code": "WK-ZEZ1JJ",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-TTEB1D",
+    "code": "WK-ZX2LL9",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-K5AE10",
+    "code": "WK-B5UD8U",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-YI3RYF",
+    "code": "WK-CIG47P",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-PT9KAL",
+    "code": "WK-CPCJS3",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-7BLX7T",
+    "code": "WK-6UQ634",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-3Z4KXR",
+    "code": "WK-8Y67ZU",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-6634U0",
+    "code": "WK-GN34ZW",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-5JHUTL",
+    "code": "WK-XY3GX0",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-N79UVH",
+    "code": "WK-S2UF8B",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.805Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-XJ69UH",
+    "code": "WK-B5TTGI",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.806Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-GCTVRB",
+    "code": "WK-77O3B9",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.806Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-LWEOFT",
+    "code": "WK-P9QFJO",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.806Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "WK-MFYEHZ",
+    "code": "WK-Z159CJ",
     "limitPerDay": 100,
-    "expiresAt": "2026-03-22T23:43:01.806Z",
+    "durationDays": 7,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-8WDCJH",
+    "code": "MO-ZDPMK4",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-QWZ100",
+    "code": "MO-O0RRSJ",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-AS0UJM",
+    "code": "MO-6QSSLT",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-A8H9K9",
+    "code": "MO-F5YUN6",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-QTBZLM",
+    "code": "MO-AZHEAP",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-47WYUA",
+    "code": "MO-CMNSAC",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-22YII7",
+    "code": "MO-G3F8U7",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-ZOIWEU",
+    "code": "MO-8EWQL1",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-ZQMXQ2",
+    "code": "MO-21UK03",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-INWF1H",
+    "code": "MO-46YI3B",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-MAHAZJ",
+    "code": "MO-RIMGSB",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-2EABC3",
+    "code": "MO-CT7W2X",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-4ZYNE2",
+    "code": "MO-I5P55D",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-Y6MGZM",
+    "code": "MO-BWTJJ3",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-VVZJHG",
+    "code": "MO-3109W0",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-GXDW1E",
+    "code": "MO-NRIU4I",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-RJFDGT",
+    "code": "MO-DTTX2G",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-QAZRG4",
+    "code": "MO-HNANRV",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-UMPG6M",
+    "code": "MO-7MA5CV",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-19BCPZ",
+    "code": "MO-DW3M1K",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-AB9XMG",
+    "code": "MO-LVCLNJ",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-G0IICE",
+    "code": "MO-EG4OTB",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-7E79IV",
+    "code": "MO-V3PQJL",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-QG4RYC",
+    "code": "MO-RQ4JVZ",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
-    "code": "MO-3MFNKN",
+    "code": "MO-350IT2",
     "limitPerDay": 3000,
-    "expiresAt": "2026-04-14T23:43:01.806Z",
+    "durationDays": 30,
+    "activatedAt": null,
+    "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   },
   {
     "code": "HACKPILOT-GODMODE",
     "limitPerDay": -1,
+    "durationDays": null,
+    "activatedAt": null,
     "expiresAt": null,
     "usageToday": 0,
-    "lastReset": "2026-03-15"
+    "lastReset": "2026-03-16"
   }
 ]

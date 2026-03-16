@@ -53,6 +53,9 @@ export async function GET(req: Request) {
       usageToday,
       limitPerDay: code.limitPerDay,
       isUnlimited: code.limitPerDay === -1,
+      expiresAt: code.expiresAt,
+      activatedAt: code.activatedAt,
+      durationDays: code.durationDays,
     });
   } catch (error: any) {
     return NextResponse.json(
