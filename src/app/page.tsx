@@ -281,6 +281,8 @@ export default function EmailBotDashboard() {
             .filter((c: any) => Object.keys(c).length > 0);
           setContacts(parsedContacts);
           setCsvUploaded(true);
+          setDrafts([]);
+          setCurrentIndex(0);
         },
       });
     }
@@ -300,12 +302,18 @@ export default function EmailBotDashboard() {
     cancelRef.current = false;
     setIsGenerating(true);
     setStep(2);
-    setDrafts([]);
-    setCurrentIndex(0);
 
-    // Filter out contacts that are already sent or rejected
+    // Don't reset drafts if we're seamlessly loading the next batch
+    const draftedEmails = new Set(drafts.map((d) => d.contact.email));
+
+    // Filter out contacts that are already sent or rejected, AND not already in drafts
     const contactsToProcess = contacts
-      .filter((c) => c.status !== "sent" && c.status !== "rejected")
+      .filter(
+        (c) =>
+          c.status !== "sent" &&
+          c.status !== "rejected" &&
+          !draftedEmails.has(c.email),
+      )
       .slice(0, 10); // Limit batch to 10
 
     if (!contactsToProcess.length) {
@@ -550,6 +558,72 @@ export default function EmailBotDashboard() {
     setCurrentIndex((prev) => prev + 1);
   };
 
+  // Seamless continuous generation
+  useEffect(() => {
+    if (
+      step === 2 &&
+      !isGenerating &&
+      drafts.length > 0 &&
+      currentIndex >= drafts.length - 2 &&
+      !cancelRef.current
+    ) {
+      const draftedEmails = new Set(drafts.map((d) => d.contact.email));
+      const remaining = contacts.filter(
+        (c) =>
+          c.status !== "sent" &&
+          c.status !== "rejected" &&
+          !draftedEmails.has(c.email),
+      );
+      if (remaining.length > 0) {
+        generateEmails();
+      }
+    }
+  }, [currentIndex, drafts.length, isGenerating, step, contacts]);
+
+  const [autoSendEnabled, setAutoSendEnabled] = useState(false);
+  const [autoSendProgress, setAutoSendProgress] = useState(0);
+  const currentDraftRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    currentDraftRef.current = drafts[currentIndex]?.id || null;
+  }, [currentIndex, drafts]);
+
+  const updateDraftStatusRef = useRef(updateDraftStatus);
+  useEffect(() => {
+    updateDraftStatusRef.current = updateDraftStatus;
+  }, [updateDraftStatus]);
+
+  useEffect(() => {
+    let animationFrame: number;
+    let startTime: number;
+
+    const animate = (time: number) => {
+      if (!startTime) startTime = time;
+      const elapsed = time - startTime;
+      const progress = Math.min((elapsed / 5000) * 100, 100);
+      setAutoSendProgress(progress);
+
+      if (progress >= 100) {
+        if (currentDraftRef.current) {
+          updateDraftStatusRef.current(currentDraftRef.current, "approved");
+        }
+      } else {
+        animationFrame = requestAnimationFrame(animate);
+      }
+    };
+
+    if (autoSendEnabled && drafts.length > 0 && currentIndex < drafts.length) {
+      setAutoSendProgress(0);
+      animationFrame = requestAnimationFrame(animate);
+    } else {
+      setAutoSendProgress(0);
+    }
+
+    return () => {
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+    };
+  }, [currentIndex, drafts.length, autoSendEnabled]);
+
   const regenerateDraft = async (id: string) => {
     const draft = drafts.find((d) => d.id === id);
     if (!draft) return;
@@ -700,6 +774,9 @@ export default function EmailBotDashboard() {
   const stopGenerationAndGoBack = () => {
     cancelRef.current = true;
     setIsGenerating(false);
+    setAutoSendEnabled(false);
+    setDrafts([]);
+    setCurrentIndex(0);
     setStep(1);
   };
 
@@ -1146,7 +1223,7 @@ export default function EmailBotDashboard() {
                       )}
                       {isGenerating
                         ? "Generating..."
-                        : "Generate & Review Next 10"}
+                        : "Start Generating Emails"}
                     </button>
                   </div>
                 </div>
@@ -1169,6 +1246,15 @@ export default function EmailBotDashboard() {
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 text-sm font-bold uppercase text-black cursor-pointer bg-gray-100 hover:bg-gray-200 px-3 py-2 border border-black transition-colors select-none">
+                    <input
+                      type="checkbox"
+                      checked={autoSendEnabled}
+                      onChange={(e) => setAutoSendEnabled(e.target.checked)}
+                      className="w-4 h-4 border-black border-2 rounded-none accent-black"
+                    />
+                    Auto-Send (5s)
+                  </label>
                   <button
                     onClick={downloadCSV}
                     className="text-sm text-black hover:bg-gray-100 transition-colors flex items-center gap-2 bg-white border border-black px-4 py-2 font-bold uppercase"
@@ -1195,7 +1281,15 @@ export default function EmailBotDashboard() {
                       transition={{ type: "spring", bounce: 0.3 }}
                       className={`w-full bg-white border border-black p-8 flex flex-col relative overflow-hidden transition-all duration-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
                     >
-                      <div className="absolute top-0 right-0 p-4 text-xs font-bold text-gray-500 border-l border-b border-black">
+                      {autoSendEnabled && (
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gray-200">
+                          <div
+                            className="h-full bg-black transition-all duration-75 ease-linear"
+                            style={{ width: `${autoSendProgress}%` }}
+                          />
+                        </div>
+                      )}
+                      <div className="absolute top-0 right-0 p-4 text-xs font-bold text-gray-500 border-l border-b border-black bg-white z-10">
                         {currentIndex + 1} / {drafts.length}{" "}
                         {isGenerating ? "(Generating...)" : ""}
                       </div>
@@ -1227,33 +1321,36 @@ export default function EmailBotDashboard() {
 
                       <div className="grid grid-cols-3 gap-4 mt-auto">
                         <button
-                          onClick={() =>
+                          onClick={() => {
+                            setAutoSendEnabled(false);
                             updateDraftStatus(
                               drafts[currentIndex].id,
                               "rejected",
-                            )
-                          }
+                            );
+                          }}
                           className="flex flex-col items-center justify-center gap-2 py-3 hover:bg-red-50 text-black transition-colors border border-black font-bold uppercase text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
                         >
                           <XCircle className="w-5 h-5 text-red-500" />
                           <span>Reject & Next</span>
                         </button>
                         <button
-                          onClick={() =>
-                            regenerateDraft(drafts[currentIndex].id)
-                          }
+                          onClick={() => {
+                            setAutoSendEnabled(false);
+                            regenerateDraft(drafts[currentIndex].id);
+                          }}
                           className="flex flex-col items-center justify-center gap-2 py-3 hover:bg-gray-100 text-black transition-colors border border-black font-bold uppercase text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
                         >
                           <RefreshCw className="w-5 h-5" />
                           <span>Retry</span>
                         </button>
                         <button
-                          onClick={() =>
+                          onClick={() => {
+                            setAutoSendEnabled(false);
                             updateDraftStatus(
                               drafts[currentIndex].id,
                               "approved",
-                            )
-                          }
+                            );
+                          }}
                           className="flex flex-col items-center justify-center gap-2 py-3 bg-black hover:bg-gray-800 text-white transition-all border border-black font-bold uppercase text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
                         >
                           <Send className="w-5 h-5" />
@@ -1292,13 +1389,13 @@ export default function EmailBotDashboard() {
                           onClick={downloadCSV}
                           className="bg-white hover:bg-gray-100 border border-black text-black px-6 py-3 font-bold uppercase transition-all flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
                         >
-                          <FileText className="w-5 h-5" /> Download Progress
+                          <FileText className="w-5 h-5" /> Download Remaining
                         </button>
                         <button
                           onClick={stopGenerationAndGoBack}
                           className="bg-black hover:bg-gray-800 text-white px-6 py-3 font-bold uppercase transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none"
                         >
-                          Configure Next
+                          Back to Home
                         </button>
                       </div>
                     </motion.div>
