@@ -530,8 +530,21 @@ export default function EmailBotDashboard() {
     isGeneratingRef.current = true;
     setStep(2);
     // Process sequentially or in small batches to avoid rate limits
-    for (const contact of contactsToProcess) {
+    const initialDraftsCount = drafts.length;
+    const activeAccounts = isAdvancedMode
+      ? accounts.filter((a) => a.email && a.pass)
+      : [{ name: accounts[0]?.name || "", email: gmailUser, pass: gmailPass }];
+
+    for (let i = 0; i < contactsToProcess.length; i++) {
+      const contact = contactsToProcess[i];
       if (cancelRef.current) break;
+      
+      const expectedIndex = initialDraftsCount + i;
+      const accountIndex = activeAccounts.length > 0 ? expectedIndex % activeAccounts.length : 0;
+      const senderName = activeAccounts.length > 0 && activeAccounts[accountIndex]?.name 
+        ? activeAccounts[accountIndex].name 
+        : "[Your Name]";
+
       try {
         const prompt =
           template === "AUTO"
@@ -547,8 +560,9 @@ export default function EmailBotDashboard() {
           3. Look up the company online using your web search capabilities to find a REAL, specific, and very recent factual update, product launch, or API feature.
           4. Replace [Company Name] with the company name you inferred.
           5. Replace [Contact Name] with a generic greeting like "Team" or a first name if you can infer one.
-          6. CRITICALLY: Replace the [Use Perplexity: ...] placeholder with the recent factual update you found online.
-          7. Keep the rest of the chosen template EXACTLY the same.
+          6. Replace [Your Name] with "${senderName}" (do not add quotes around it).
+          7. CRITICALLY: Replace the [Use Perplexity: ...] placeholder with the recent factual update you found online.
+          8. Keep the rest of the chosen template EXACTLY the same.
 
           Return ONLY the customized email content using the EXACT format below:
           TARGET_EMAIL: [extracted email address from data]
@@ -562,8 +576,9 @@ export default function EmailBotDashboard() {
           1. Analyze the raw contact details below. Find the best email address to contact, and figure out the person's name or company name.
           2. Replace [Company Name] with the contact's company name.
           3. Replace [Contact Name] with a generic greeting like "Team" or a first name if you can infer one.
-          4. CRITICALLY: Look up the company online using your web search capabilities to find a REAL, specific, and very recent factual update, product launch, or API feature about the company, and replace the [Use Perplexity: ...] placeholder with this information.
-          5. Keep the rest of the template EXACTLY the same.
+          4. Replace [Your Name] with "${senderName}" (do not add quotes around it).
+          5. CRITICALLY: Look up the company online using your web search capabilities to find a REAL, specific, and very recent factual update, product launch, or API feature about the company, and replace the [Use Perplexity: ...] placeholder with this information.
+          6. Keep the rest of the template EXACTLY the same.
 
           Return ONLY the customized email content using the EXACT format below:
           TARGET_EMAIL: [extracted email address from data]
@@ -692,7 +707,7 @@ export default function EmailBotDashboard() {
     if (status === "approved") {
       const activeAccounts = isAdvancedMode
         ? accounts.filter((a) => a.email && a.pass)
-        : [{ name: "", email: gmailUser, pass: gmailPass }];
+        : [{ name: accounts[0]?.name || "", email: gmailUser, pass: gmailPass }];
 
       if (draft && activeAccounts.length > 0) {
         // Round-robin selection based on currentIndex
@@ -849,6 +864,16 @@ export default function EmailBotDashboard() {
       ),
     );
 
+    const draftIndex = drafts.findIndex((d) => d.id === id);
+    const activeAccounts = isAdvancedMode
+      ? accounts.filter((a) => a.email && a.pass)
+      : [{ name: accounts[0]?.name || "", email: gmailUser, pass: gmailPass }];
+      
+    const accountIndex = activeAccounts.length > 0 ? draftIndex % activeAccounts.length : 0;
+    const senderName = activeAccounts.length > 0 && activeAccounts[accountIndex]?.name 
+      ? activeAccounts[accountIndex].name 
+      : "[Your Name]";
+
     try {
       const prompt =
         template === "AUTO"
@@ -864,8 +889,9 @@ export default function EmailBotDashboard() {
           3. Look up the company online using your web search capabilities to find a REAL, specific, and very recent factual update, product launch, or API feature.
           4. Replace [Company Name] with the company name you inferred.
           5. Replace [Contact Name] with a generic greeting like "Team" or a first name if you can infer one.
-          6. CRITICALLY: Replace the [Use Perplexity: ...] placeholder with the recent factual update you found online.
-          7. Keep the rest of the chosen template EXACTLY the same.
+          6. Replace [Your Name] with "${senderName}" (do not add quotes around it).
+          7. CRITICALLY: Replace the [Use Perplexity: ...] placeholder with the recent factual update you found online.
+          8. Keep the rest of the chosen template EXACTLY the same.
 
           IMPORTANT: This is a retry. Do not mention that this is a retry. Just write a new, slightly different version using a different creative angle.
           Return ONLY the customized email content using the EXACT format below:
@@ -880,8 +906,9 @@ export default function EmailBotDashboard() {
           1. Analyze the raw contact details below. Find the best email address to contact, and figure out the person's name or company name.
           2. Replace [Company Name] with the contact's company name.
           3. Replace [Contact Name] with a generic greeting like "Team" or a first name if you can infer one.
-          4. CRITICALLY: Look up the company online using your web search capabilities to find a REAL, specific, and very recent factual update, product launch, or API feature about the company, and replace the [Use Perplexity: ...] placeholder with this information.
-          5. Keep the rest of the template EXACTLY the same.
+          4. Replace [Your Name] with "${senderName}" (do not add quotes around it).
+          5. CRITICALLY: Look up the company online using your web search capabilities to find a REAL, specific, and very recent factual update, product launch, or API feature about the company, and replace the [Use Perplexity: ...] placeholder with this information.
+          6. Keep the rest of the template EXACTLY the same.
 
           IMPORTANT: This is a retry. Do not mention that this is a retry. Just write a new, slightly different version using a different creative angle.
           Return ONLY the customized email content using the EXACT format below:
